@@ -23,7 +23,7 @@ function RouteWrapper() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/" element={<Navigate to="/all/node-b" replace />} />
         <Route path="/:regional" element={<RegionLayout />}>

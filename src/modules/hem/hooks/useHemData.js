@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { loadSheet, GID_MAP } from '../../../shared/data/gvizClient';
-import { parseNodeBRows } from '../nodeb.parser';
+import { parseHemRows } from '../hem.parser';
 
-export function useNodeBData(regionalFilter = null) {
+export function useHemData(regionalFilter = null, isOlo = false) {
   const [rawRows, setRawRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,20 +12,18 @@ export function useNodeBData(regionalFilter = null) {
     setLoading(true);
     setError(null);
     try {
-      const table = await loadSheet(GID_MAP.NODE_B, { headers: 1 });
-      console.log('[useNodeBData] Table cols:', table ? table.cols.map((c, i) => `${i}:${c.label || c.id}`) : []);
-      console.log('[useNodeBData] Sample raw row 0:', table && table.rows ? table.rows[0] : null);
-      const parsed = parseNodeBRows(table);
-      console.log('[useNodeBData] Parsed rows count:', parsed.length);
+      const gid = isOlo ? GID_MAP.OLO : GID_MAP.HEM;
+      const table = await loadSheet(gid, { headers: 1 });
+      const parsed = parseHemRows(table, isOlo);
       setRawRows(parsed);
       setLastUpdated(new Date());
     } catch (err) {
-      console.error('[useNodeBData] Error fetching NODE B data:', err);
-      setError(err.message || 'Gagal memuat data NODE B');
+      console.error(`[useHemData] Error fetching ${isOlo ? 'OLO' : 'HEM'} data:`, err);
+      setError(err.message || `Gagal memuat data ${isOlo ? 'OLO' : 'HEM'}`);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOlo]);
 
   useEffect(() => {
     fetchData();

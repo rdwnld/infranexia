@@ -1,14 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 
-const STATUS_MARKER_COLORS = {
-  CLOSED: '#10b981',
-  OPEN: '#3b82f6',
-  KENDALA: '#f59e0b',
-  DROP: '#ef4444',
-  UNKNOWN: '#64748b',
-};
-
 function ChangeView({ bounds }) {
   const map = useMap();
   if (bounds && bounds.length > 0) {
@@ -50,20 +42,35 @@ function CtrlScrollZoom() {
   return null;
 }
 
-export function SiteMapPanel({ filteredRows = [], onSelectSite }) {
+// STO coordinates lookup dictionary for Regional Sumatera
+const STO_COORDINATES = {
+  BGO: { lat: -3.2000, lng: 101.8597 },
+  ANP: { lat: 2.4365, lng: 99.7639 },
+  BKN: { lat: -0.0941, lng: 101.1518 },
+  BKR: { lat: -0.1006, lng: 101.1184 },
+  BKG: { lat: 4.2813, lng: 100.9250 },
+  BST: { lat: 2.9600, lng: 99.0600 },
+  PDT: { lat: -2.9900, lng: 104.7500 },
+  KAG: { lat: -3.2500, lng: 104.8000 },
+  PPN: { lat: 1.6800, lng: 101.4500 },
+  DUM: { lat: 1.6667, lng: 101.4500 },
+};
+
+export function OrderMapPanel({ filteredRows = [], moduleTitle = 'HEM' }) {
   const mapData = useMemo(() => {
     const points = [];
     filteredRows.forEach(r => {
-      if (r.lat && r.lng) {
+      const coords = STO_COORDINATES[r.sto];
+      if (coords) {
         points.push({
           id: r.id,
-          siteId: r.siteId,
-          siteName: r.siteName,
+          namaLop: r.namaLop,
           district: r.district,
-          status: r.statusLapangan,
-          progres: r.progresLapangan,
-          lat: r.lat,
-          lng: r.lng,
+          stage: r.stage,
+          subkon: r.subkon,
+          lat: coords.lat,
+          lng: coords.lng,
+          isClosed: r.isClosed,
         });
       }
     });
@@ -75,33 +82,16 @@ export function SiteMapPanel({ filteredRows = [], onSelectSite }) {
     return mapData.map(p => [p.lat, p.lng]);
   }, [mapData]);
 
-  // Default center: Regional Sumatera (around Pekanbaru / Padang)
   const defaultCenter = [0.5071, 101.4478];
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
+    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg mb-6 flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Peta Sebaran Site</h2>
+          <h2 className="text-slate-100 font-semibold text-lg">Peta Sebaran Order {moduleTitle}</h2>
           <p className="text-xs text-slate-400">
-            Lokasi geografis ({mapData.length} site dengan koordinat valid)
+            Lokasi geografis ({mapData.length} order terhubung dengan titik STO)
           </p>
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Closed
-          </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" /> Open
-          </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> Kendala
-          </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" /> Drop
-          </span>
         </div>
       </div>
 
@@ -121,24 +111,21 @@ export function SiteMapPanel({ filteredRows = [], onSelectSite }) {
             <CircleMarker
               key={p.id}
               center={[p.lat, p.lng]}
-              radius={5}
+              radius={6}
               pathOptions={{
-                color: STATUS_MARKER_COLORS[p.status] || '#64748b',
-                fillColor: STATUS_MARKER_COLORS[p.status] || '#64748b',
+                color: p.isClosed ? '#10b981' : '#f59e0b',
+                fillColor: p.isClosed ? '#10b981' : '#f59e0b',
                 fillOpacity: 0.8,
                 weight: 1.5,
               }}
             >
               <Popup>
                 <div className="text-slate-900 font-sans text-xs">
-                  <p className="font-bold text-sm mb-0.5">{p.siteId} — {p.siteName}</p>
-                  <p className="text-slate-600 mb-1">District: {p.district}</p>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className="font-semibold px-1.5 py-0.5 bg-slate-100 rounded border text-[10px]">
-                      {p.status}
-                    </span>
-                    <span className="text-slate-500">{p.progres}</span>
-                  </div>
+                  <p className="font-bold text-sm mb-0.5">{p.namaLop}</p>
+                  <p className="text-slate-600 mb-1">District: {p.district} • Subkon: {p.subkon}</p>
+                  <span className="font-semibold px-1.5 py-0.5 bg-slate-100 rounded border text-[10px]">
+                    {p.stage}
+                  </span>
                 </div>
               </Popup>
             </CircleMarker>

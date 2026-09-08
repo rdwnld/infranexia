@@ -40,23 +40,20 @@ bagian Blocker di bawah)
 
 ## Fase 2 — Modul HEM & OLO
 
-- [ ] Putuskan: modul HEM & OLO digabung jadi satu modul generik atau tetap terpisah (tergantung hasil
-      Data Discovery — lihat `ARCHITECTURE.md` §3)
-- [ ] Implementasi `hem.stageRules.js` (klasifikasi 7 tahap + sub-tahap Persiapan — `skill.md` §2)
-- [ ] Implementasi `hem.parser.js` / `olo.parser.js` sesuai kolom hasil Data Discovery
-- [ ] Implementasi `useHemData`/`useOloData` + filter reducer masing-masing
-- [ ] Panel: Profiling Order (strip KPI) — FR-12
-- [ ] Panel: Status Deployment (flow/tree view antar tahap) — FR-14
-- [ ] Panel: Matrix status per District — FR-15
-- [ ] Panel: Analisis aging/durasi order (pareto) — FR-16
-- [ ] Panel: Sub Status table — FR-17
-- [ ] Panel: Ach Closed ranking (per Branch/Batch/Subkon) — FR-18
-- [ ] Panel: Fokus list (top-N order paling lama tertunda) — FR-19
-- [ ] Panel: Peta sebaran order — FR-20
-- [ ] Interaksi filter kombinasi (single-select + multi-select + dropdown tambahan) — FR-21
-- [ ] Duplikasi/adaptasi seluruh panel di atas untuk modul OLO
-- [ ] Loading & error state untuk modul HEM & OLO
-- [ ] Uji dengan data nyata
+- [x] Putuskan: modul HEM & OLO digabung jadi satu modul generik (re-use `HemPage` & `hem.parser.js` dengan prop `isOlo`)
+- [x] Implementasi `hem.stageRules.js` (klasifikasi 7 tahap + sub-tahap Persiapan — `skill.md` §2)
+- [x] Implementasi `hem.parser.js` untuk tab HEM (`gid=1129058778`) dan OLO (`gid=1544967736`)
+- [x] Implementasi `useHemData` + `useHemFilters` reducer
+- [x] Panel: Profiling Order (strip KPI) — FR-12
+- [x] Panel: Status Deployment (flow horizontal 7 tahap + sub-tahap) — FR-14
+- [x] Panel: Matrix status per District — FR-15
+- [x] Panel: Analisis aging/durasi order (pareto) — FR-16
+- [x] Panel: Ach Closed ranking (per District/Batch/Subkon) — FR-18
+- [x] Panel: Fokus list (top-5 order tertua) — FR-19
+- [x] Panel: Peta sebaran order — FR-20
+- [x] Adaptasi modul OLO (re-use modul HEM dengan dataset OLO)
+- [x] Loading & error state untuk modul HEM & OLO
+- [x] Uji build proyek dan parser data live HEM & OLO
 
 ## Fase 3 — Navigasi Regional
 

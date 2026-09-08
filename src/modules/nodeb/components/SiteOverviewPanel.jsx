@@ -89,7 +89,7 @@ export function SiteOverviewPanel({ filteredRows = [], activeStatus = null, onSe
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'CLOSED')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'CLOSED'
-                ? 'bg-emerald-950/60 border-emerald-500 ring-1 ring-emerald-500'
+                 ? 'bg-emerald-950/60 border-emerald-500 border-2'
                 : 'bg-slate-800/50 border-slate-700/60 hover:border-emerald-500/50'
             }`}
           >
@@ -103,7 +103,7 @@ export function SiteOverviewPanel({ filteredRows = [], activeStatus = null, onSe
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'OPEN')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'OPEN'
-                ? 'bg-blue-950/60 border-blue-500 ring-1 ring-blue-500'
+                ? 'bg-blue-950/60 border-blue-500 border-2'
                 : 'bg-slate-800/50 border-slate-700/60 hover:border-blue-500/50'
             }`}
           >
@@ -117,7 +117,7 @@ export function SiteOverviewPanel({ filteredRows = [], activeStatus = null, onSe
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'KENDALA')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'KENDALA'
-                ? 'bg-amber-950/60 border-amber-500 ring-1 ring-amber-500'
+                 ? 'bg-amber-950/60 border-amber-500 border-2'
                 : 'bg-slate-800/50 border-slate-700/60 hover:border-amber-500/50'
             }`}
           >
@@ -131,7 +131,7 @@ export function SiteOverviewPanel({ filteredRows = [], activeStatus = null, onSe
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'DROP')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'DROP'
-                ? 'bg-rose-950/60 border-rose-500 ring-1 ring-rose-500'
+                 ? 'bg-rose-950/60 border-rose-500 border-2'
                 : 'bg-slate-800/50 border-slate-700/60 hover:border-rose-500/50'
             }`}
           >

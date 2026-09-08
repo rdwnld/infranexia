@@ -1,19 +1,28 @@
 import { colIndex, getCellValue } from '../../shared/data/columnLookup';
 
 /**
- * Clean & normalize coordinate to standard lat/lng
+ * Clean & normalize coordinate to standard lat/lng for Regional Sumatera
  */
 function parseCoordinate(val, isLat = true) {
   if (val === null || val === undefined || val === '') return null;
   let num = typeof val === 'number' ? val : parseFloat(String(val).replace(/,/g, '.'));
   if (isNaN(num) || num === 0) return null;
 
-  // Cleanup scaled integer values e.g. -3200026 -> -3.200026, 10185976 -> 101.85976
-  const maxLimit = isLat ? 90 : 180;
-  while (Math.abs(num) > maxLimit) {
-    num /= 10;
+  if (isLat) {
+    // Latitude scale down until Math.abs(num) <= 15.0
+    while (Math.abs(num) > 15.0) {
+      num /= 10;
+    }
+    if (Math.abs(num) > 15.0) return null;
+    return num;
+  } else {
+    // Longitude scale down until 85.0 <= num <= 140.0
+    while (Math.abs(num) > 140.0) {
+      num /= 10;
+    }
+    if (num < 85.0 || num > 140.0) return null;
+    return num;
   }
-  return num;
 }
 
 /**
@@ -64,12 +73,14 @@ export function parseNodeBRows(table) {
 
     const siteId = String(getCellValue(row, iSiteId, '')).trim();
     const siteName = String(getCellValue(row, iSiteName, '')).trim();
+    const nimOrder = String(getCellValue(row, iNimOrder, '')).trim();
+    const districtRaw = String(getCellValue(row, iDistrict, '')).trim();
 
-    // Skip empty row
-    if (!siteId && !siteName) continue;
+    // Skip empty formatting rows
+    if (!siteId && !siteName && !nimOrder && !districtRaw) continue;
 
     const regionRaw = String(getCellValue(row, iRegion, '')).trim().toUpperCase();
-    const districtClean = cleanDistrict(getCellValue(row, iDistrict, ''));
+    const districtClean = cleanDistrict(districtRaw);
 
     const rawLat = getCellValue(row, iLatSite, null);
     const rawLng = getCellValue(row, iLongSite, null);
@@ -89,11 +100,11 @@ export function parseNodeBRows(table) {
       region: regionRaw, // SBU, SBT, SBS
       district: districtClean,
       sto: String(getCellValue(row, iSto, '')).trim().toUpperCase(),
-      siteId,
-      siteName,
+      siteId: siteId || `SITE-${r}`,
+      siteName: siteName || `Site ${r}`,
       lat,
       lng,
-      nimOrder: String(getCellValue(row, iNimOrder, '')).trim(),
+      nimOrder,
       batchOrder: String(getCellValue(row, iBatchOrder, 'Tanpa Batch')).trim() || 'Tanpa Batch',
       tglOrder: getCellValue(row, iTglOrder, ''),
       mitra: String(getCellValue(row, iMitra, '-')).trim() || '-',

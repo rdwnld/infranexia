@@ -39,7 +39,7 @@ export function SubStatusPanel({ filteredRows = [], activeProgres = null, onSele
               onClick={() => onSelectProgres && onSelectProgres('progresLapangan', item.name)}
               className={`w-full p-2.5 rounded-lg border text-left transition-all flex items-center justify-between ${
                 isSelected
-                  ? 'bg-sky-950/70 border-sky-500 ring-1 ring-sky-500'
+                  ? 'bg-sky-950/70 border-sky-500 border-2'
                   : 'bg-slate-800/40 border-slate-800 hover:border-slate-700 hover:bg-slate-800/70'
               }`}
             >
