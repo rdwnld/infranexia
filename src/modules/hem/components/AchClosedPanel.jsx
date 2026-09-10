@@ -1,94 +1,101 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { Search } from 'lucide-react';
 
-export function AchClosedPanel({
-  filteredRows = [],
-  groupBy = 'district', // 'district' | 'batchOrder' | 'subkon'
-  onChangeGroupBy,
-  onSelectGroupItem,
-}) {
-  const rankingData = useMemo(() => {
-    const map = {};
-    filteredRows.forEach(r => {
-      const key = r[groupBy] || 'Tanpa Group';
-      if (!map[key]) {
-        map[key] = { name: key, total: 0, closed: 0 };
-      }
-      map[key].total++;
-      if (r.isClosed) map[key].closed++;
-    });
+function buildRanking(rows, key, query, topN = 8) {
+  const map = {};
+  rows.forEach(r => {
+    const name = r[key] || 'Tanpa Data';
+    if (!map[name]) map[name] = { name, total: 0, closed: 0 };
+    map[name].total++;
+    if (r.isClosed) map[name].closed++;
+  });
 
-    return Object.values(map)
-      .map(item => ({
-        ...item,
-        achPct: item.total > 0 ? ((item.closed / item.total) * 100).toFixed(1) : '0.0',
-      }))
-      .sort((a, b) => parseFloat(b.achPct) - parseFloat(a.achPct))
-      .slice(0, 10);
-  }, [filteredRows, groupBy]);
+  const q = query.trim().toLowerCase();
+  return Object.values(map)
+    .map(item => ({
+      ...item,
+      ach: item.total > 0 ? Number(((item.closed / item.total) * 100).toFixed(1)) : 0,
+    }))
+    .filter(item => !q || item.name.toLowerCase().includes(q))
+    .sort((a, b) => b.ach - a.ach || b.total - a.total)
+    .slice(0, topN);
+}
+
+function AchBarChart({ title, subtitle, data, filterKey, onSelect }) {
+  return (
+    <div className="bg-slate-950/40 border border-slate-800 rounded-lg p-3 flex flex-col min-w-0">
+      <div className="mb-2">
+        <h3 className="text-slate-200 font-semibold text-sm">{title}</h3>
+        <p className="text-[11px] text-slate-500">{subtitle}</p>
+      </div>
+      <div className="h-56">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 0, right: 12, left: 8, bottom: 0 }}
+            onClick={(state) => {
+              const label = state?.activeLabel;
+              if (label && onSelect) onSelect(filterKey, label);
+            }}
+          >
+            <XAxis type="number" domain={[0, 100]} stroke="#64748b" fontSize={10} tickFormatter={(v) => `${v}%`} />
+            <YAxis
+              type="category"
+              dataKey="name"
+              stroke="#94a3b8"
+              fontSize={10}
+              width={95}
+              tickFormatter={(v) => (v.length > 13 ? `${v.slice(0, 12)}…` : v)}
+            />
+            <Tooltip
+              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.5rem' }}
+              itemStyle={{ color: '#f8fafc' }}
+              formatter={(val, _name, props) => [`${val}% (${props.payload.closed}/${props.payload.total})`, 'Ach Closed']}
+            />
+            <Bar dataKey="ach" radius={[0, 4, 4, 0]} className="cursor-pointer">
+              {data.map(entry => (
+                <Cell key={entry.name} fill={entry.ach >= 80 ? '#10b981' : entry.ach >= 50 ? '#38bdf8' : '#f59e0b'} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+export function AchClosedPanel({ filteredRows = [], onSelectGroupItem }) {
+  const [query, setQuery] = useState('');
+
+  const byDistrict = useMemo(() => buildRanking(filteredRows, 'district', query), [filteredRows, query]);
+  const byBatch = useMemo(() => buildRanking(filteredRows, 'batchOrder', query), [filteredRows, query]);
+  const bySubkon = useMemo(() => buildRanking(filteredRows, 'subkon', query), [filteredRows, query]);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-slate-100 font-semibold text-lg">Pencapaian Ach Closed</h2>
-          <p className="text-xs text-slate-400">Peringkat % order selesai (klik item untuk filter)</p>
+          <p className="text-xs text-slate-400">Tiga chart terpisah per District, Batch & Subkon (klik bar untuk filter)</p>
         </div>
-
-        {/* Group By Selector Toggle */}
-        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 self-start">
-          <button
-            onClick={() => onChangeGroupBy && onChangeGroupBy('district')}
-            className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
-              groupBy === 'district' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            District
-          </button>
-          <button
-            onClick={() => onChangeGroupBy && onChangeGroupBy('batchOrder')}
-            className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
-              groupBy === 'batchOrder' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Batch
-          </button>
-          <button
-            onClick={() => onChangeGroupBy && onChangeGroupBy('subkon')}
-            className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
-              groupBy === 'subkon' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Subkon
-          </button>
+        <div className="relative shrink-0">
+          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cari nama…"
+            className="pl-8 pr-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-md text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 w-44"
+          />
         </div>
       </div>
 
-      <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-        {rankingData.map((item, idx) => (
-          <button
-            key={item.name}
-            onClick={() => onSelectGroupItem && onSelectGroupItem(groupBy, item.name)}
-            className="w-full p-2.5 rounded-lg border bg-slate-800/40 border-slate-800 hover:border-slate-700 text-left transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <span className="w-5 h-5 rounded-full bg-slate-800 text-[10px] font-bold text-slate-400 flex items-center justify-center shrink-0">
-                {idx + 1}
-              </span>
-              <span className="text-xs font-medium text-slate-200 truncate group-hover:text-sky-300">
-                {item.name}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-[11px] text-slate-400 font-mono">
-                {item.closed}/{item.total}
-              </span>
-              <span className="text-xs font-bold text-emerald-400 font-mono w-12 text-right">
-                {item.achPct}%
-              </span>
-            </div>
-          </button>
-        ))}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+        <AchBarChart title="Per District" subtitle="Top 8 % closed per district" data={byDistrict} filterKey="district" onSelect={onSelectGroupItem} />
+        <AchBarChart title="Per Batch" subtitle="Top 8 % closed per batch order" data={byBatch} filterKey="batchOrder" onSelect={onSelectGroupItem} />
+        <AchBarChart title="Per Subkon" subtitle="Top 8 % closed per subkontraktor" data={bySubkon} filterKey="subkon" onSelect={onSelectGroupItem} />
       </div>
     </div>
   );

@@ -48,27 +48,31 @@ bagian Blocker di bawah)
 - [x] Panel: Status Deployment (flow horizontal 7 tahap + sub-tahap) — FR-14
 - [x] Panel: Matrix status per District — FR-15
 - [x] Panel: Analisis aging/durasi order (pareto) — FR-16
-- [x] Panel: Ach Closed ranking (per District/Batch/Subkon) — FR-18
+- [x] Panel: Sub Status table + search box — FR-17, FR-22
+- [x] Panel: Ach Closed — tiga bar chart terpisah per District/Batch/Subkon + search — FR-18, FR-22
 - [x] Panel: Fokus list (top-5 order tertua) — FR-19
 - [x] Panel: Peta sebaran order — FR-20
+- [x] Filter kombinasi + kalender Periode Komitmen Golive — FR-21
+- [x] Search box tabel Matrix District — FR-22
 - [x] Adaptasi modul OLO (re-use modul HEM dengan dataset OLO)
 - [x] Loading & error state untuk modul HEM & OLO
 - [x] Uji build proyek dan parser data live HEM & OLO
 
 ## Fase 3 — Navigasi Regional
 
-- [ ] Implementasi `regionConfig.js` (definisi SBU/SBT/SBS + mapping Branch→Regional hasil Fase 0)
-- [ ] Setup routing `/:regional/:modul`
-- [ ] Layout navigasi utama (tab regional + tab modul) — FR-1, FR-2
-- [ ] Terapkan filter regional ke pipeline data ketiga modul
-- [ ] (Jika dikonfirmasi) Halaman ringkasan gabungan lintas-regional — FR-3
-- [ ] Header: last updated + tombol refresh manual — FR-4
-- [ ] Uji perpindahan antar regional & modul, pastikan filter ter-reset dengan benar saat pindah
+- [x] Implementasi `regionConfig.js` (definisi SBU/SBT/SBS + mapping Branch→Regional hasil Fase 0)
+- [x] Setup routing `/:regional/:modul` (+ rute `summary`)
+- [x] Layout navigasi utama (tab regional + tab modul + tab Ringkasan) — FR-1, FR-2
+- [x] Terapkan filter regional ke pipeline data ketiga modul
+- [x] Halaman ringkasan gabungan lintas-regional — FR-3 (`SummaryPage`: HEM + OLO per SBU/SBT/SBS)
+- [x] Header: last updated + tombol refresh manual per modul — FR-4 (`DataRefreshBar`)
+- [x] Reset filter otomatis saat pindah regional
+- [x] Uji build proyek Fase 3
 
 ## Fase 4 — Fitur Lanjutan (opsional, tergantung hasil Fase 0 #9)
 
-- [ ] Baseline harian "data bergerak" (bandingkan snapshot hari ini vs kemarin)
-- [ ] Insight otomatis (ringkasan naratif dari data)
+- [x] Baseline harian "data bergerak" (snapshot localStorage 14 hari + strip delta vs kemarin)
+- [x] Insight otomatis (ringkasan naratif rule-based: bottleneck district, penumpukan aging, rasio drop)
 - [ ] Simulasi/proyeksi (perlu spesifikasi bisnis terpisah sebelum dikerjakan — jangan mulai tanpa
       requirement jelas dari user)
 

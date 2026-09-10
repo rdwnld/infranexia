@@ -1,7 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
 import { STAGES, STAGE_SEQUENCE } from '../hem.stageRules';
 
 export function DistrictMatrixPanel({ filteredRows = [], onSelectMatrixCell }) {
+  const [query, setQuery] = useState('');
+
   const matrix = useMemo(() => {
     const map = {};
     filteredRows.forEach(r => {
@@ -16,15 +19,28 @@ export function DistrictMatrixPanel({ filteredRows = [], onSelectMatrixCell }) {
       map[dist].total++;
     });
 
-    return Object.values(map).sort((a, b) => a.district.localeCompare(b.district));
-  }, [filteredRows]);
+    const q = query.trim().toLowerCase();
+    return Object.values(map)
+      .filter(row => !q || row.district.toLowerCase().includes(q))
+      .sort((a, b) => a.district.localeCompare(b.district));
+  }, [filteredRows, query]);
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg mb-6 flex flex-col">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-slate-100 font-semibold text-lg">Matrix Status per District</h2>
           <p className="text-xs text-slate-400">Tabel silang District × Tahap Progres (klik angka cell untuk filter)</p>
+        </div>
+        <div className="relative shrink-0">
+          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cari district…"
+            className="pl-8 pr-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-md text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 w-44"
+          />
         </div>
       </div>
 

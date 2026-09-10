@@ -1,4 +1,5 @@
 import { colIndex, getCellValue } from '../../shared/data/columnLookup';
+import { normalizeRegionCode } from '../../regions/regionConfig';
 import { getStage, getSubStagePersiapan, STAGES } from './hem.stageRules';
 
 /**
@@ -12,16 +13,9 @@ function cleanDistrict(raw) {
     .toUpperCase();
 }
 
-/**
- * Normalize regional code to standard route badges: SUMBAGUT->SBU, SUMBAGTENG->SBT, SUMBAGSEL->SBS
- */
+/** Regional badge standar via regionConfig.js (SUMBAGUT→SBU, dst.) */
 function normalizeRegion(raw) {
-  if (!raw) return 'ALL';
-  const str = String(raw).trim().toUpperCase();
-  if (str.includes('SUMBAGUT') || str === 'SBU') return 'SBU';
-  if (str.includes('SUMBAGTENG') || str === 'SBT') return 'SBT';
-  if (str.includes('SUMBAGSEL') || str === 'SBS') return 'SBS';
-  return str;
+  return normalizeRegionCode(raw) || 'ALL';
 }
 
 /**
@@ -32,6 +26,49 @@ function normalizeAgingBucket(raw) {
   const str = String(raw).trim();
   if (str.includes('LEBIHI DARI 1 BLN')) return '5.>1BLN';
   return str;
+}
+
+const MONTH_MAP = {
+  JAN: '01', FEB: '02', MAR: '03', APR: '04', MAY: '05', MEI: '05',
+  JUN: '06', JUL: '07', AUG: '08', AGS: '08', SEP: '09',
+  OCT: '10', OKT: '10', NOV: '11', DEC: '12', DES: '12',
+};
+
+/**
+ * Normalize sheet date value to ISO YYYY-MM-DD for calendar comparison.
+ * Handles gviz Date(YYYY,M,D), "15/Jan/2026", "15-Jan-2026", "January 15, 2026".
+ */
+function parseSheetDateISO(raw) {
+  if (raw === null || raw === undefined || raw === '') return '';
+  if (raw instanceof Date && !isNaN(raw)) {
+    return raw.toISOString().slice(0, 10);
+  }
+  const str = String(raw).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+
+  const gviz = str.match(/Date\((\d+),\s*(\d+),\s*(\d+)/);
+  if (gviz) {
+    const y = gviz[1];
+    const m = String(Number(gviz[2]) + 1).padStart(2, '0');
+    const d = String(gviz[3]).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  const dmy = str.match(/(\d{1,2})[\/\-\s]+([A-Za-z]{3,9})[\/\-\s,]+(\d{4})/);
+  if (dmy) {
+    const mKey = dmy[2].slice(0, 3).toUpperCase();
+    const m = MONTH_MAP[mKey];
+    if (m) return `${dmy[3]}-${m}-${String(dmy[1]).padStart(2, '0')}`;
+  }
+
+  const mdy = str.match(/([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})/);
+  if (mdy) {
+    const mKey = mdy[1].slice(0, 3).toUpperCase();
+    const m = MONTH_MAP[mKey];
+    if (m) return `${mdy[3]}-${m}-${String(mdy[2]).padStart(2, '0')}`;
+  }
+
+  return '';
 }
 
 /**
@@ -96,7 +133,7 @@ export function parseHemRows(table, isOlo = false) {
       status: String(getCellValue(row, iStatus, '')).trim(),
       detailProgres: String(getCellValue(row, iDetailProgres, '')).trim(),
       agingBucket: normalizeAgingBucket(getCellValue(row, iKlafDurasi, '6.>2BLN')),
-      tglOrder: getCellValue(row, iTglOrder, ''),
+      tglOrder: parseSheetDateISO(getCellValue(row, iTglOrder, '')),
       stage,
       subStagePersiapan,
       isClosed,

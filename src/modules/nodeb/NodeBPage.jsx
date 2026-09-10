@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNodeBData } from './hooks/useNodeBData';
 import { useNodeBFilters } from './hooks/useNodeBFilters';
+import { DataRefreshBar } from '../../shared/components/DataRefreshBar';
 import { SiteOverviewPanel } from './components/SiteOverviewPanel';
 import { StatusByBranchPanel } from './components/StatusByBranchPanel';
 import { SubStatusPanel } from './components/SubStatusPanel';
@@ -11,7 +12,7 @@ import { LoadingState } from '../../shared/components/LoadingState';
 import { ErrorState } from '../../shared/components/ErrorState';
 
 export function NodeBPage({ regional = 'ALL' }) {
-  const { rows, allRows, loading, error, refresh } = useNodeBData(regional);
+  const { rows, allRows, loading, error, lastUpdated, refresh } = useNodeBData(regional);
   const {
     state,
     filteredRows,
@@ -20,6 +21,11 @@ export function NodeBPage({ regional = 'ALL' }) {
     resetFilters,
     isFiltered,
   } = useNodeBFilters(rows);
+
+  // Reset filter setiap pindah regional agar tidak terbawa antar wilayah
+  useEffect(() => {
+    resetFilters();
+  }, [regional, resetFilters]);
 
   if (loading) {
     return <LoadingState message="Memuat data NODE B..." />;
@@ -31,6 +37,9 @@ export function NodeBPage({ regional = 'ALL' }) {
 
   return (
     <div className="space-y-6">
+      {/* Last updated + refresh manual (FR-4) */}
+      <DataRefreshBar label="NODE B" lastUpdated={lastUpdated} onRefresh={refresh} />
+
       {/* Top Filter Bar */}
       <FilterChecklist
         allRows={rows}

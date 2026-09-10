@@ -4,6 +4,7 @@ import { RegionLayout } from './routes/RegionLayout';
 import { NodeBPage } from './modules/nodeb/NodeBPage';
 import { HemPage } from './modules/hem/HemPage';
 import { OloPage } from './modules/olo/OloPage';
+import { SummaryPage } from './routes/SummaryPage';
 
 function RouteWrapper() {
   const { regional = 'all', module = 'node-b' } = useParams();
@@ -16,6 +17,9 @@ function RouteWrapper() {
   }
   if (module === 'olo') {
     return <OloPage regional={regional} />;
+  }
+  if (module === 'summary') {
+    return <SummaryPage />;
   }
 
   return <Navigate to={`/${regional}/node-b`} replace />;
