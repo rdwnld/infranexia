@@ -36,15 +36,20 @@ ini final tanpa konfirmasi eksplisit.
 | Testing | Vitest + React Testing Library | Final |
 | Deploy target | Vercel / Netlify | Final |
 
-### 2.1 Sumber Data & GID Tab (Terverifikasi)
+### 2.1 Sumber Data & GID Tab (Terverifikasi — migrasi sheet baru Sep 2026)
 
-Spreadsheet ID: `1sQuMVrp-GAZu4TrUO5bn3Ul5fLELgNa_rIWDGAI-ujU`
+Spreadsheet ID: `1dnXcxcN9uhmBff_Sau5Yz4kBpTZeDtt-Otf7EmHREqM`
+(sheet lama `1sQuMVrp-...` sudah tidak dipakai)
 
 | Modul | Tab GID | Fetch URL | Skala Data | Headers Row |
 |---|---|---|---|---|
-| NODE B | `636051156` | `.../gviz/tq?tqx=out:json&gid=636051156` | ~1.346 baris | Default (row 1 header) |
-| HEM | `1129058778` | `.../gviz/tq?tqx=out:json&gid=1129058778&headers=1` | ~1.136 baris | Headers=1 (row 1 header data) |
+| NODE B | `636051156` | `.../gviz/tq?tqx=out:json&gid=636051156&headers=2` | ~1.346 baris | Headers=2 (header di baris 2) |
+| HEM | `1129058778` | `.../gviz/tq?tqx=out:json&gid=1129058778&headers=1` | ~1.124 baris | Headers=1 (row 1 header data) |
 | OLO | `1544967736` | `.../gviz/tq?tqx=out:json&gid=1544967736&headers=1` | ~137 baris | Headers=1 (row 1 header data) |
+
+Perbedaan sheet baru vs lama (parser tahan via `colIndex()` by nama header):
+- HEM: kolom U kini `STATUS JT`, kolom `Status` pindah ke CC (mayoritas null — `isClosed` mengandalkan stage).
+- OLO: ada kolom nomor tanpa label di A sehingga semua kolom geser +1 (A kosong, B=`Status Order`, J=`REGION`, dst.) — tidak berdampak karena lookup by nama.
 
 ---
 

@@ -32,9 +32,9 @@ export function BatchOrderPanel({ filteredRows = [], activeBatch = null, onSelec
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-auto max-h-72 custom-scrollbar pr-1">
         <table className="w-full text-left text-xs">
-          <thead>
+          <thead className="sticky top-0 bg-slate-900 z-10">
             <tr className="border-b border-slate-800 text-slate-400 font-medium uppercase tracking-wider">
               <th className="pb-2 pl-2">Batch Name</th>
               <th className="pb-2 text-right">Total</th>

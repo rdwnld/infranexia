@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { STAGES } from '../hem.stageRules';
+import { statusPinIcon } from '../../../shared/components/mapPins';
 
 function ChangeView({ bounds }) {
   const map = useMap();
@@ -105,14 +106,14 @@ export function OrderMapPanel({ filteredRows = [], moduleTitle = 'HEM' }) {
 
         {/* Legend Header */}
         <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Golive/UT
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className="nx-legend-pin bg-emerald-500" /> Golive/UT
           </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" /> In Progres
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className="nx-legend-pin bg-blue-500" /> In Progres
           </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" /> Drop
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className="nx-legend-pin bg-rose-500" /> Drop
           </span>
         </div>
       </div>
@@ -130,16 +131,12 @@ export function OrderMapPanel({ filteredRows = [], moduleTitle = 'HEM' }) {
           />
           {bounds.length > 0 && <ChangeView bounds={bounds} />}
           {mapData.map(p => (
-            <CircleMarker
+            <Marker
               key={p.id}
-              center={[p.lat, p.lng]}
-              radius={5}
-              pathOptions={{
-                color: p.color,
-                fillColor: p.color,
-                fillOpacity: 0.8,
-                weight: 1.2,
-              }}
+              position={[p.lat, p.lng]}
+              icon={statusPinIcon(p.color, {
+                pulse: p.stage === STAGES.APPROVED_DROP || p.stage === STAGES.PROPOSED_DROP,
+              })}
             >
               <Popup>
                 <div className="text-slate-900 font-sans text-xs">
@@ -150,7 +147,7 @@ export function OrderMapPanel({ filteredRows = [], moduleTitle = 'HEM' }) {
                   </span>
                 </div>
               </Popup>
-            </CircleMarker>
+            </Marker>
           ))}
         </MapContainer>
       </div>

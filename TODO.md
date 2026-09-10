@@ -37,6 +37,7 @@ bagian Blocker di bawah)
 - [x] Interaksi filter: klik chart/tabel/peta memfilter seluruh halaman — FR-11
 - [x] Loading & error state untuk modul NODE B — FR-23
 - [x] Uji build proyek dan parser data live NODE B
+- [ ] Verifikasi ulang modul NODE B terhadap sheet baru (header baris 2, `headers=2`) — unpause
 
 ## Fase 2 — Modul HEM & OLO
 
@@ -73,6 +74,8 @@ bagian Blocker di bawah)
 
 - [x] Baseline harian "data bergerak" (snapshot localStorage 14 hari + strip delta vs kemarin)
 - [x] Insight otomatis (ringkasan naratif rule-based: bottleneck district, penumpukan aging, rasio drop)
+- [x] Laporan Telegram otomatis — digest gabungan 3 modul 1x sehari + tombol kirim manual, hanya di halaman Ringkasan (client-side, token di localStorage)
+- [x] Digest Telegram via GitHub Actions terjadwal (tanpa buka halaman) — `scripts/telegram-digest.mjs` + `.github/workflows/telegram-digest.yml`
 - [ ] Simulasi/proyeksi (perlu spesifikasi bisnis terpisah sebelum dikerjakan — jangan mulai tanpa
       requirement jelas dari user)
 

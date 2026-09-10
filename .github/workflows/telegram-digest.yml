@@ -1,0 +1,26 @@
+name: telegram-digest
+
+on:
+  # MODE TES: tiap 5 menit (minimal interval cron GitHub). Untuk produksi
+  # ganti ke mis. '0 7 * * *' (07:00 UTC ≈ 14:00 WIB, 1x sehari).
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # tombol "Run workflow" manual untuk tes
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Kirim digest ke Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scripts/telegram-digest.mjs

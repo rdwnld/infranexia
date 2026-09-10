@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { statusPinIcon } from '../../../shared/components/mapPins';
 
 const STATUS_MARKER_COLORS = {
   CLOSED: '#10b981',
@@ -8,6 +9,9 @@ const STATUS_MARKER_COLORS = {
   DROP: '#ef4444',
   UNKNOWN: '#64748b',
 };
+
+// Status bermasalah dapat pulse perhatian di peta
+const PULSE_STATUSES = new Set(['KENDALA', 'DROP']);
 
 function ChangeView({ bounds }) {
   const map = useMap();
@@ -90,17 +94,17 @@ export function SiteMapPanel({ filteredRows = [], onSelectSite }) {
 
         {/* Legend */}
         <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Closed
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className="nx-legend-pin bg-emerald-500" /> Closed
           </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" /> Open
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className="nx-legend-pin bg-blue-500" /> Open
           </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> Kendala
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className="nx-legend-pin bg-amber-500" /> Kendala
           </span>
-          <span className="flex items-center gap-1 text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" /> Drop
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <span className="nx-legend-pin bg-rose-500" /> Drop
           </span>
         </div>
       </div>
@@ -118,16 +122,12 @@ export function SiteMapPanel({ filteredRows = [], onSelectSite }) {
           />
           {bounds.length > 0 && <ChangeView bounds={bounds} />}
           {mapData.map(p => (
-            <CircleMarker
+            <Marker
               key={p.id}
-              center={[p.lat, p.lng]}
-              radius={5}
-              pathOptions={{
-                color: STATUS_MARKER_COLORS[p.status] || '#64748b',
-                fillColor: STATUS_MARKER_COLORS[p.status] || '#64748b',
-                fillOpacity: 0.8,
-                weight: 1.5,
-              }}
+              position={[p.lat, p.lng]}
+              icon={statusPinIcon(STATUS_MARKER_COLORS[p.status] || '#64748b', {
+                pulse: PULSE_STATUSES.has(p.status),
+              })}
             >
               <Popup>
                 <div className="text-slate-900 font-sans text-xs">
@@ -141,7 +141,7 @@ export function SiteMapPanel({ filteredRows = [], onSelectSite }) {
                   </div>
                 </div>
               </Popup>
-            </CircleMarker>
+            </Marker>
           ))}
         </MapContainer>
       </div>

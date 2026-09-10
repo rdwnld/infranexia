@@ -12,7 +12,7 @@ export function useNodeBData(regionalFilter = null) {
     setLoading(true);
     setError(null);
     try {
-      const table = await loadSheet(GID_MAP.NODE_B, { headers: 1 });
+      const table = await loadSheet(GID_MAP.NODE_B, { headers: 2 });
       console.log('[useNodeBData] Table cols:', table ? table.cols.map((c, i) => `${i}:${c.label || c.id}`) : []);
       console.log('[useNodeBData] Sample raw row 0:', table && table.rows ? table.rows[0] : null);
       const parsed = parseNodeBRows(table);
