@@ -1,28 +1,13 @@
 import { colIndex, getCellValue } from '../../shared/data/columnLookup';
 
 /**
- * Clean & normalize coordinate to standard lat/lng for Regional Sumatera
+ * Clean & normalize coordinate value to standard scale
  */
-function parseCoordinate(val, isLat = true) {
+function normalizeRawNum(val) {
   if (val === null || val === undefined || val === '') return null;
   let num = typeof val === 'number' ? val : parseFloat(String(val).replace(/,/g, '.'));
   if (isNaN(num) || num === 0) return null;
-
-  if (isLat) {
-    // Latitude scale down until Math.abs(num) <= 15.0
-    while (Math.abs(num) > 15.0) {
-      num /= 10;
-    }
-    if (Math.abs(num) > 15.0) return null;
-    return num;
-  } else {
-    // Longitude scale down until 85.0 <= num <= 140.0
-    while (Math.abs(num) > 140.0) {
-      num /= 10;
-    }
-    if (num < 85.0 || num > 140.0) return null;
-    return num;
-  }
+  return num;
 }
 
 /**
@@ -82,11 +67,36 @@ export function parseNodeBRows(table) {
     const regionRaw = String(getCellValue(row, iRegion, '')).trim().toUpperCase();
     const districtClean = cleanDistrict(districtRaw);
 
-    const rawLat = getCellValue(row, iLatSite, null);
-    const rawLng = getCellValue(row, iLongSite, null);
+    let rawLat = normalizeRawNum(getCellValue(row, iLatSite, null));
+    let rawLng = normalizeRawNum(getCellValue(row, iLongSite, null));
 
-    const lat = parseCoordinate(rawLat, true);
-    const lng = parseCoordinate(rawLng, false);
+    let lat = null;
+    let lng = null;
+
+    if (rawLat !== null || rawLng !== null) {
+      // Scale down integer coordinates
+      let v1 = rawLat;
+      let v2 = rawLng;
+
+      if (v1 !== null) {
+        while (Math.abs(v1) > 180.0) v1 /= 10;
+      }
+      if (v2 !== null) {
+        while (Math.abs(v2) > 180.0) v2 /= 10;
+      }
+
+      // Check if v1 is longitude and v2 is latitude (swapped)
+      if (v1 !== null && Math.abs(v1) >= 80 && Math.abs(v1) <= 140) {
+        lng = Math.abs(v1);
+        if (v2 !== null && Math.abs(v2) <= 15) lat = v2;
+      } else if (v2 !== null && Math.abs(v2) >= 80 && Math.abs(v2) <= 140) {
+        lng = Math.abs(v2);
+        if (v1 !== null && Math.abs(v1) <= 15) lat = v1;
+      } else {
+        if (v1 !== null && Math.abs(v1) <= 15) lat = v1;
+        if (v2 !== null && Math.abs(v2) >= 80 && Math.abs(v2) <= 140) lng = Math.abs(v2);
+      }
+    }
 
     const statusLapangan = String(getCellValue(row, iStatusLapangan, 'UNKNOWN')).trim().toUpperCase() || 'UNKNOWN';
     const progresLapangan = String(getCellValue(row, iProgresLapangan, 'UNKNOWN')).trim() || 'UNKNOWN';

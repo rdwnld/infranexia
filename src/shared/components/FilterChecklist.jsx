@@ -31,27 +31,26 @@ export function FilterChecklist({
   return (
     <div className="bg-slate-900/90 border border-slate-800 rounded-xl shadow-md mb-6 overflow-hidden">
       {/* Top Row — Header label + Status + Calendar + Reset */}
-      <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/60">
-        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-5 flex-1 min-w-0">
+      <div className="p-4 flex items-center gap-4 border-b border-slate-800/60">
+        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0 overflow-x-auto filter-top-scroll pb-1">
           {/* Filter Checklist label */}
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
             <Filter className="w-4 h-4 text-sky-400" />
             Filter Checklist
           </div>
 
-          {/* Vertical divider */}
-          <div className="hidden md:block h-5 w-px bg-slate-800" />
+          <div className="hidden sm:block h-5 w-px bg-slate-800 shrink-0" />
 
           {/* Status Multi-select */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-xs text-slate-400 font-medium mr-1">Status:</span>
+            <span className="text-xs text-slate-400 font-medium mr-1 shrink-0">Status:</span>
             {statusOptions.map(st => {
               const isChecked = multiSelect.stage?.has(st.name);
               return (
                 <button
                   key={st.name}
                   onClick={() => onToggleItem('stage', st.name)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all shrink-0 ${
                     isChecked
                       ? 'bg-sky-500/20 border-sky-400 text-sky-200 shadow-sm'
                       : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200'
@@ -65,7 +64,7 @@ export function FilterChecklist({
 
           {/* Calendar Date Picker — right of Status */}
           {showCommitmentPeriod && (
-            <div className="flex items-center gap-2 border-l border-slate-800 pl-5 shrink-0">
+            <div className="flex items-center gap-2 border-l border-slate-800 pl-4 shrink-0">
               <Calendar className="w-3.5 h-3.5 text-sky-400 shrink-0" />
               <span className="text-xs text-slate-400 font-medium whitespace-nowrap">Periode Komitmen:</span>
               <div className="relative flex items-center">
@@ -73,7 +72,7 @@ export function FilterChecklist({
                   type="date"
                   value={activeCommitmentPeriod || ''}
                   onChange={(e) => onSelectCommitmentPeriod && onSelectCommitmentPeriod(e.target.value || null)}
-                  className="date-input px-2.5 py-1 bg-slate-800/60 border border-slate-700/60 rounded-md text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500/60 focus:bg-slate-800 transition-all hover:border-sky-500/30 cursor-pointer w-[150px]"
+                  className="date-input px-2.5 py-1 bg-slate-800/60 border border-slate-700/60 rounded-md text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500/60 focus:bg-slate-800 transition-all hover:border-sky-500/30 cursor-pointer w-[140px]"
                 />
                 {activeCommitmentPeriod && (
                   <button
@@ -93,7 +92,7 @@ export function FilterChecklist({
         {isFiltered && (
           <button
             onClick={onResetFilters}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-medium rounded-lg transition-colors shrink-0 self-start md:self-auto"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-medium rounded-lg transition-colors shrink-0 whitespace-nowrap"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Reset Filter
           </button>

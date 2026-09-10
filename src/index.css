@@ -82,6 +82,31 @@
   background: linear-gradient(90deg, #475569, #64748b);
 }
 
+/* Top filter row — horizontal scroll when Reset button appears */
+.filter-top-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filter-top-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.filter-top-scroll::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 3px;
+}
+
+.filter-top-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #334155, #475569);
+  border-radius: 3px;
+}
+
+.filter-top-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #475569, #64748b);
+}
+
 /* District scroll wrapper — smooth scroll buttons & gradient fade edges */
 .district-scroll-wrapper {
   position: relative;
