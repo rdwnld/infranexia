@@ -76,6 +76,7 @@ bagian Blocker di bawah)
 - [x] Insight otomatis (ringkasan naratif rule-based: bottleneck district, penumpukan aging, rasio drop)
 - [x] Laporan Telegram otomatis — digest gabungan 3 modul 1x sehari + tombol kirim manual, hanya di halaman Ringkasan (client-side, token di localStorage)
 - [x] Digest Telegram via GitHub Actions terjadwal (tanpa buka halaman) — `scripts/telegram-digest.mjs` + `.github/workflows/telegram-digest.yml`
+- [x] Bot perintah Tingkat 1 (`bot/bot.js` long-polling, tanpa dependensi) — `/laporan /nodeb /hem /olo /help`, token via `.env` (git-ignored)
 - [ ] Simulasi/proyeksi (perlu spesifikasi bisnis terpisah sebelum dikerjakan — jangan mulai tanpa
       requirement jelas dari user)
 
