@@ -96,25 +96,25 @@ export function InsightPanel({ filteredRows = [] }) {
   if (insights.length === 0) return null;
 
   const iconFor = (type) => {
-    if (type === 'warn') return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />;
-    if (type === 'good') return <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />;
-    return <Info className="w-4 h-4 text-sky-400 shrink-0" />;
+    if (type === 'warn') return <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />;
+    if (type === 'good') return <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />;
+    return <Info className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />;
   };
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
       <div className="flex items-center gap-2 mb-3">
-        <Lightbulb className="w-5 h-5 text-amber-400" />
+        <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Insight Otomatis</h2>
-          <p className="text-xs text-slate-400">Ringkasan naratif dari data yang sedang tampil</p>
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Insight Otomatis</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Ringkasan naratif dari data yang sedang tampil</p>
         </div>
       </div>
       <ul className="space-y-2">
         {insights.map((ins, idx) => (
           <li
             key={idx}
-            className="flex items-start gap-2.5 p-3 rounded-lg bg-slate-950/50 border border-slate-800/70 text-xs text-slate-300 leading-relaxed"
+            className="flex items-start gap-2.5 p-3 rounded-lg bg-slate-100 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/70 text-xs text-slate-700 dark:text-slate-300 leading-relaxed"
           >
             <span className="mt-0.5">{iconFor(ins.type)}</span>
             <span>{ins.text}</span>

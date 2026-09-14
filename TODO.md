@@ -81,6 +81,7 @@ bagian Blocker di bawah)
 
 ## Cross-cutting / Kapan Saja
 
+- [x] Tema terang + toggle gelap/terang (default gelap, tersimpan di browser)
 - [ ] Aksesibilitas dasar (kontras warna, navigasi keyboard) — NFR-5
 - [ ] Review performa render filter (< 500ms) — NFR-2
 - [ ] Review keamanan render data eksternal (tidak ada `dangerouslySetInnerHTML`) — NFR-1

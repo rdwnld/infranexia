@@ -3,10 +3,10 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export function ErrorState({ message = 'Terjadi kesalahan saat memuat data', onRetry }) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-rose-950/20 border border-rose-800/40 rounded-xl text-center">
-      <AlertTriangle className="w-10 h-10 text-rose-400 mb-3" />
+    <div className="flex flex-col items-center justify-center p-8 bg-rose-100 dark:bg-rose-950/20 border border-rose-800/40 rounded-xl text-center">
+      <AlertTriangle className="w-10 h-10 text-rose-600 dark:text-rose-400 mb-3" />
       <h3 className="text-rose-200 font-semibold text-lg mb-1">Gagal Memuat Data</h3>
-      <p className="text-slate-400 text-sm mb-4 max-w-md">{message}</p>
+      <p className="text-slate-500 dark:text-slate-400 text-sm mb-4 max-w-md">{message}</p>
       {onRetry && (
         <button
           onClick={onRetry}

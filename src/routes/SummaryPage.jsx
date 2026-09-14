@@ -49,31 +49,31 @@ function ModuleSummarySection({ title, badge, rows, accent, classify, closedLabe
   const totalAll = data.reduce((sum, d) => sum + d.total, 0);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className={`font-semibold text-lg ${accent}`}>{title}</h2>
-          <p className="text-xs text-slate-400">Perbandingan antar sub-regional (total {totalAll} {unitLabel})</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Perbandingan antar sub-regional (total {totalAll} {unitLabel})</p>
         </div>
-        <span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded">{badge}</span>
+        <span className="text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded">{badge}</span>
       </div>
 
       {/* Region KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         {data.map(d => (
-          <div key={d.region} className="bg-slate-950/60 border border-slate-800 rounded-lg p-4">
-            <div className="text-xs font-bold text-sky-300 mb-2">Regional {d.region}</div>
+          <div key={d.region} className="bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
+            <div className="text-xs font-bold text-sky-600 dark:text-sky-300 mb-2">Regional {d.region}</div>
             <div className="flex items-end justify-between mb-1">
-              <span className="text-2xl font-extrabold text-slate-100">{d.total}</span>
-              <span className="text-sm font-bold text-emerald-400 font-mono">{d.ach}%</span>
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{d.total}</span>
+              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">{d.ach}%</span>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden mb-2">
+            <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mb-2">
               <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${Math.min(100, d.ach)}%` }} />
             </div>
             <div className="flex items-center gap-3 text-[11px] font-mono">
-              <span className="text-emerald-400">{closedLabel} {d.golive}</span>
-              <span className="text-blue-400">Open {d.open}</span>
-              <span className="text-rose-400">Drop {d.drop}</span>
+              <span className="text-emerald-600 dark:text-emerald-400">{closedLabel} {d.golive}</span>
+              <span className="text-blue-600 dark:text-blue-400">Open {d.open}</span>
+              <span className="text-rose-600 dark:text-rose-400">Drop {d.drop}</span>
             </div>
           </div>
         ))}
@@ -86,8 +86,8 @@ function ModuleSummarySection({ title, badge, rows, accent, classify, closedLabe
             <XAxis dataKey="region" stroke="#64748b" fontSize={12} />
             <YAxis stroke="#94a3b8" fontSize={11} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.5rem' }}
-              itemStyle={{ color: '#f8fafc' }}
+              contentStyle={{ backgroundColor: 'var(--nx-tooltip-bg)', borderColor: 'var(--nx-tooltip-border)', borderRadius: '0.5rem' }}
+              itemStyle={{ color: 'var(--nx-tooltip-text)' }}
             />
             <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
             <Bar dataKey="golive" name={closedLabel} stackId="a" fill="#10b981" />
@@ -128,10 +128,10 @@ export function SummaryPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <LayoutDashboard className="w-5 h-5 text-amber-400" />
+        <LayoutDashboard className="w-5 h-5 text-amber-600 dark:text-amber-400" />
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Ringkasan Lintas-Regional</h2>
-          <p className="text-xs text-slate-400">Perbandingan cepat SBU vs SBT vs SBS (FR-3)</p>
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Ringkasan Lintas-Regional</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Perbandingan cepat SBU vs SBT vs SBS (FR-3)</p>
         </div>
       </div>
 
@@ -143,9 +143,11 @@ export function SummaryPage() {
 
       <SummaryTelegramPanel nodebRows={nodeb.allRows} hemRows={hem.allRows} oloRows={olo.allRows} />
 
-      <ModuleSummarySection title="Modul NODE B" badge="NODE B" rows={nodeb.allRows} accent="text-sky-300" classify={classifyNodeB} closedLabel="Closed" unitLabel="site" />
-      <ModuleSummarySection title="Modul HEM" badge="HEM" rows={hem.allRows} accent="text-emerald-300" classify={classifyHemOlo} />
-      <ModuleSummarySection title="Modul OLO" badge="OLO" rows={olo.allRows} accent="text-purple-300" classify={classifyHemOlo} />
+      <ModuleSummarySection title="Modul NODE B" badge="NODE B" rows={nodeb.allRows} accent="text-sky-600 dark:text-sky-300" classify={classifyNodeB} closedLabel="Closed" unitLabel="site" />
+      <ModuleSummarySection title="Modul HEM" badge="HEM" rows={hem.allRows} accent="text-emerald-600 dark:text-emerald-300" classify={classifyHemOlo} />
+      <ModuleSummarySection title="Modul OLO" badge="OLO" rows={olo.allRows} accent="text-purple-600 dark:text-purple-300" classify={classifyHemOlo} />
     </div>
   );
 }
+
+

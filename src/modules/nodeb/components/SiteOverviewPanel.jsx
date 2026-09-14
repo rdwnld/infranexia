@@ -32,15 +32,15 @@ export function SiteOverviewPanel({ filteredRows = [], activeStatus = null, onSe
   }, [filteredRows]);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Site Overview</h2>
-          <p className="text-xs text-slate-400">Proporsi status site Node B (klik slice/card untuk filter)</p>
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Site Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Proporsi status site Node B (klik slice/card untuk filter)</p>
         </div>
         <div className="text-right">
-          <span className="text-2xl font-bold text-emerald-400">{stats.closedPct}%</span>
-          <p className="text-xs text-slate-400">Ach Closed</p>
+          <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.closedPct}%</span>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Ach Closed</p>
         </div>
       </div>
 
@@ -71,15 +71,15 @@ export function SiteOverviewPanel({ filteredRows = [], activeStatus = null, onSe
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.5rem' }}
-                itemStyle={{ color: '#f8fafc' }}
+                contentStyle={{ backgroundColor: 'var(--nx-tooltip-bg)', borderColor: 'var(--nx-tooltip-border)', borderRadius: '0.5rem' }}
+                itemStyle={{ color: 'var(--nx-tooltip-text)' }}
                 formatter={(val, name) => [`${val} Site (${((val / (stats.total || 1)) * 100).toFixed(1)}%)`, name]}
               />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-xl font-bold text-slate-100">{stats.total}</span>
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider">Total Site</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-slate-100">{stats.total}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Site</span>
           </div>
         </div>
 
@@ -89,59 +89,61 @@ export function SiteOverviewPanel({ filteredRows = [], activeStatus = null, onSe
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'CLOSED')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'CLOSED'
-                 ? 'bg-emerald-950/60 border-emerald-500 border-2'
-                : 'bg-slate-800/50 border-slate-700/60 hover:border-emerald-500/50'
+                 ? 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-500 border-2'
+                : 'bg-slate-200 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700/60 hover:border-emerald-500/50'
             }`}
           >
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 mb-1 font-medium">
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5" /> CLOSED
             </div>
-            <div className="text-xl font-bold text-slate-100">{stats.counts.CLOSED}</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{stats.counts.CLOSED}</div>
           </button>
 
           <button
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'OPEN')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'OPEN'
-                ? 'bg-blue-950/60 border-blue-500 border-2'
-                : 'bg-slate-800/50 border-slate-700/60 hover:border-blue-500/50'
+                ? 'bg-blue-100 dark:bg-blue-950/60 border-blue-500 border-2'
+                : 'bg-slate-200 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700/60 hover:border-blue-500/50'
             }`}
           >
-            <div className="flex items-center gap-1.5 text-xs text-blue-400 mb-1 font-medium">
+            <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 mb-1 font-medium">
               <Clock className="w-3.5 h-3.5" /> OPEN
             </div>
-            <div className="text-xl font-bold text-slate-100">{stats.counts.OPEN}</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{stats.counts.OPEN}</div>
           </button>
 
           <button
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'KENDALA')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'KENDALA'
-                 ? 'bg-amber-950/60 border-amber-500 border-2'
-                : 'bg-slate-800/50 border-slate-700/60 hover:border-amber-500/50'
+                 ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-500 border-2'
+                : 'bg-slate-200 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700/60 hover:border-amber-500/50'
             }`}
           >
-            <div className="flex items-center gap-1.5 text-xs text-amber-400 mb-1 font-medium">
+            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 mb-1 font-medium">
               <AlertCircle className="w-3.5 h-3.5" /> KENDALA
             </div>
-            <div className="text-xl font-bold text-slate-100">{stats.counts.KENDALA}</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{stats.counts.KENDALA}</div>
           </button>
 
           <button
             onClick={() => onSelectStatus && onSelectStatus('statusLapangan', 'DROP')}
             className={`p-3 rounded-lg border text-left transition-all ${
               activeStatus === 'DROP'
-                 ? 'bg-rose-950/60 border-rose-500 border-2'
-                : 'bg-slate-800/50 border-slate-700/60 hover:border-rose-500/50'
+                 ? 'bg-rose-100 dark:bg-rose-950/60 border-rose-500 border-2'
+                : 'bg-slate-200 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700/60 hover:border-rose-500/50'
             }`}
           >
-            <div className="flex items-center gap-1.5 text-xs text-rose-400 mb-1 font-medium">
+            <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 mb-1 font-medium">
               <XCircle className="w-3.5 h-3.5" /> DROP
             </div>
-            <div className="text-xl font-bold text-slate-100">{stats.counts.DROP}</div>
+            <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{stats.counts.DROP}</div>
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+

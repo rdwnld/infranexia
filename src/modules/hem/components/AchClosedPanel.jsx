@@ -24,9 +24,9 @@ function buildRanking(rows, key, query, topN = 8) {
 
 function AchBarChart({ title, subtitle, data, filterKey, onSelect }) {
   return (
-    <div className="bg-slate-950/40 border border-slate-800 rounded-lg p-3 flex flex-col min-w-0">
+    <div className="bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex flex-col min-w-0">
       <div className="mb-2">
-        <h3 className="text-slate-200 font-semibold text-sm">{title}</h3>
+        <h3 className="text-slate-800 dark:text-slate-200 font-semibold text-sm">{title}</h3>
         <p className="text-[11px] text-slate-500">{subtitle}</p>
       </div>
       <div className="h-56">
@@ -50,8 +50,8 @@ function AchBarChart({ title, subtitle, data, filterKey, onSelect }) {
               tickFormatter={(v) => (v.length > 13 ? `${v.slice(0, 12)}…` : v)}
             />
             <Tooltip
-              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.5rem' }}
-              itemStyle={{ color: '#f8fafc' }}
+              contentStyle={{ backgroundColor: 'var(--nx-tooltip-bg)', borderColor: 'var(--nx-tooltip-border)', borderRadius: '0.5rem' }}
+              itemStyle={{ color: 'var(--nx-tooltip-text)' }}
               formatter={(val, _name, props) => [`${val}% (${props.payload.closed}/${props.payload.total})`, 'Ach Closed']}
             />
             <Bar dataKey="ach" radius={[0, 4, 4, 0]} className="cursor-pointer">
@@ -74,11 +74,11 @@ export function AchClosedPanel({ filteredRows = [], onSelectGroupItem }) {
   const bySubkon = useMemo(() => buildRanking(filteredRows, 'subkon', query), [filteredRows, query]);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Pencapaian Ach Closed</h2>
-          <p className="text-xs text-slate-400">Tiga chart terpisah per District, Batch & Subkon (klik bar untuk filter)</p>
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Pencapaian Ach Closed</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Tiga chart terpisah per District, Batch & Subkon (klik bar untuk filter)</p>
         </div>
         <div className="relative shrink-0">
           <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -87,7 +87,7 @@ export function AchClosedPanel({ filteredRows = [], onSelectGroupItem }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari nama…"
-            className="pl-8 pr-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-md text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 w-44"
+            className="pl-8 pr-3 py-1.5 bg-slate-200 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700/60 rounded-md text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 w-44"
           />
         </div>
       </div>
@@ -100,3 +100,5 @@ export function AchClosedPanel({ filteredRows = [], onSelectGroupItem }) {
     </div>
   );
 }
+
+

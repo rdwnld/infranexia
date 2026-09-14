@@ -19,16 +19,16 @@ function formatDateTime(date) {
 
 export function DataRefreshBar({ lastUpdated, onRefresh, label = 'Data' }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-900/60 border border-slate-800 rounded-lg px-4 py-2.5">
-      <div className="flex items-center gap-2 text-xs text-slate-400">
-        <Clock className="w-3.5 h-3.5 text-sky-400" />
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5">
+      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <Clock className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
         <span>
-          {label} diperbarui: <strong className="text-slate-200 font-medium">{formatDateTime(lastUpdated)}</strong>
+          {label} diperbarui: <strong className="text-slate-800 dark:text-slate-200 font-medium">{formatDateTime(lastUpdated)}</strong>
         </span>
       </div>
       <button
         onClick={onRefresh}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-medium rounded-lg transition-colors shrink-0 self-start sm:self-auto"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-600 dark:text-sky-300 text-xs font-medium rounded-lg transition-colors shrink-0 self-start sm:self-auto"
       >
         <RefreshCw className="w-3.5 h-3.5" /> Refresh {label}
       </button>

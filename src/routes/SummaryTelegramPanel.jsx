@@ -4,15 +4,12 @@ import {
   loadTelegramSettings,
   saveTelegramSettings,
   sendTelegramMessage,
-  getLastSentAt,
-  markSentNow,
+  alreadyAutoSentToday,
+  markAutoSentToday,
 } from '../shared/utils/telegram';
 import { STAGES } from '../modules/hem/hem.stageRules';
 
 const SCOPE_KEY = 'summary-daily';
-// MODE TES: kirim otomatis tiap 2 menit (kembalikan ke guard harian untuk produksi)
-const TEST_INTERVAL_MS = 2 * 60 * 1000;
-const TEST_CHECK_MS = 30 * 1000;
 
 function summarizeHemOlo(rows = []) {
   let total = rows.length;
@@ -98,23 +95,16 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
     }
   }, [settings.botToken, settings.chatId, nodebRows, hemRows, oloRows]);
 
-  // MODE TES: cek tiap 30 detik, kirim jika >= 2 menit sejak kirim terakhir
+  // Produksi: auto-send maksimal 1x sehari saat halaman Ringkasan dibuka
   useEffect(() => {
-    if (!ready || !settings.autoSend || !configured) return;
-    let timer = null;
-    const tick = async () => {
-      if (autoAttempted.current) return;
-      if (Date.now() - getLastSentAt(SCOPE_KEY) < TEST_INTERVAL_MS) return;
-      autoAttempted.current = true;
-      const ok = await doSend(true);
-      if (ok) markSentNow(SCOPE_KEY);
-      autoAttempted.current = false;
-    };
-    tick();
-    timer = setInterval(tick, TEST_CHECK_MS);
-    return () => {
-      if (timer) clearInterval(timer);
-    };
+    if (autoAttempted.current || !ready) return;
+    if (!settings.autoSend || !configured) return;
+    if (alreadyAutoSentToday(SCOPE_KEY)) return;
+    autoAttempted.current = true;
+    doSend(true).then(ok => {
+      if (ok) markAutoSentToday(SCOPE_KEY);
+      else autoAttempted.current = false;
+    });
   }, [ready, settings.autoSend, configured, doSend]);
 
   const handleSave = () => {
@@ -125,12 +115,12 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
   };
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-lg">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-lg">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <BellRing className="w-4 h-4 text-sky-400" />
+          <BellRing className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           <div>
-            <h3 className="text-slate-200 font-semibold text-sm">Alert Telegram — Ringkasan (TES: tiap 2 mnt)</h3>
+            <h3 className="text-slate-800 dark:text-slate-200 font-semibold text-sm">Alert Telegram — Ringkasan Harian</h3>
             <p className="text-[11px] text-slate-500">
               {configured
                 ? `Digest NODE B + HEM + OLO, otomatis 1x sehari ${settings.autoSend ? 'aktif' : 'nonaktif'}`
@@ -142,7 +132,7 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setShowConfig(v => !v)}
-            className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors"
+            className="p-2 rounded-lg bg-slate-200 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-400 dark:hover:border-slate-600 transition-colors"
             title="Konfigurasi Telegram"
           >
             <Settings2 className="w-4 h-4" />
@@ -150,7 +140,7 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
           <button
             onClick={() => doSend(false)}
             disabled={sendState === 'sending' || !ready}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-600 dark:text-sky-300 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
           >
             {sendState === 'sending'
               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -163,10 +153,10 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
       {sendMsg && (
         <div className={`mt-3 flex items-center gap-2 text-xs px-3 py-2 rounded-lg border ${
           sendState === 'sent'
-            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-300'
             : sendState === 'error'
-              ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-              : 'bg-slate-800/50 border-slate-700/60 text-slate-400'
+              ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-300'
+              : 'bg-slate-200 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700/60 text-slate-500 dark:text-slate-400'
         }`}>
           {sendState === 'sent'
             ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
@@ -178,23 +168,23 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
       )}
 
       {showConfig && (
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 p-3 rounded-lg bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
           <input
             type="password"
             value={settings.botToken}
             onChange={(e) => setSettings(s => ({ ...s, botToken: e.target.value }))}
             placeholder="Bot Token (dari @BotFather)"
-            className="px-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-md text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
+            className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700/60 rounded-md text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
           />
           <input
             type="text"
             value={settings.chatId}
             onChange={(e) => setSettings(s => ({ ...s, chatId: e.target.value }))}
             placeholder="Chat ID grup/channel (bot harus jadi anggota)"
-            className="px-3 py-1.5 bg-slate-800/60 border border-slate-700/60 rounded-md text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
+            className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700/60 rounded-md text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
           />
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer select-none">
+            <label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={settings.autoSend}
@@ -205,7 +195,7 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
             </label>
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium rounded-md transition-colors"
+              className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-xs font-medium rounded-md transition-colors"
             >
               Simpan
             </button>

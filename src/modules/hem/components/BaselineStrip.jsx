@@ -10,10 +10,10 @@ function DeltaBadge({ value, suffix = '', invert = false }) {
   const good = isZero ? null : (invert ? !isUp : isUp);
   const Icon = isZero ? Minus : isUp ? TrendingUp : TrendingDown;
   const color = isZero
-    ? 'text-slate-400 bg-slate-800/60 border-slate-700/60'
+    ? 'text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700/60'
     : good
-      ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30'
-      : 'text-rose-300 bg-rose-500/10 border-rose-500/30';
+      ? 'text-emerald-600 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/30'
+      : 'text-rose-600 dark:text-rose-300 bg-rose-500/10 border-rose-500/30';
 
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold font-mono border ${color}`}>
@@ -26,7 +26,7 @@ function DeltaBadge({ value, suffix = '', invert = false }) {
 export function BaselineStrip({ delta, previousDate }) {
   if (!delta) {
     return (
-      <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-900/40 border border-dashed border-slate-800 rounded-lg px-4 py-2.5">
+      <div className="flex items-center gap-2 text-xs text-slate-500 bg-white dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5">
         <History className="w-3.5 h-3.5" />
         <span>Baseline harian: kunjungi halaman ini lagi besok untuk melihat pergerakan data vs hari ini.</span>
       </div>
@@ -34,24 +34,24 @@ export function BaselineStrip({ delta, previousDate }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-slate-900/60 border border-slate-800 rounded-lg px-4 py-2.5">
-      <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-        <History className="w-3.5 h-3.5 text-amber-400" />
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5">
+      <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <History className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
         vs {formatBaselineDate(previousDate)}:
       </span>
-      <span className="flex items-center gap-1.5 text-xs text-slate-400">
+      <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         Total <DeltaBadge value={delta.total} />
       </span>
-      <span className="flex items-center gap-1.5 text-xs text-slate-400">
+      <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         Golive <DeltaBadge value={delta.golive} />
       </span>
-      <span className="flex items-center gap-1.5 text-xs text-slate-400">
+      <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         Open <DeltaBadge value={delta.open} invert />
       </span>
-      <span className="flex items-center gap-1.5 text-xs text-slate-400">
+      <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         Drop <DeltaBadge value={delta.drop} invert />
       </span>
-      <span className="flex items-center gap-1.5 text-xs text-slate-400">
+      <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         Ach <DeltaBadge value={delta.ach} suffix="%" />
       </span>
     </div>

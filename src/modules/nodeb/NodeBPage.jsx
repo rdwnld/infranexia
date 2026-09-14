@@ -52,11 +52,11 @@ export function NodeBPage({ regional = 'ALL' }) {
 
       {/* Filter Active Badge Indicator */}
       {isFiltered && (
-        <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-900/50 p-2.5 rounded-lg border border-slate-800">
-          <span className="font-semibold text-sky-400">Filter Aktif:</span>
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <span className="font-semibold text-sky-600 dark:text-sky-400">Filter Aktif:</span>
           <span>
-            Menampilkan <strong className="text-slate-100">{filteredRows.length}</strong> dari{' '}
-            <strong className="text-slate-100">{rows.length}</strong> site
+            Menampilkan <strong className="text-slate-900 dark:text-slate-100">{filteredRows.length}</strong> dari{' '}
+            <strong className="text-slate-900 dark:text-slate-100">{rows.length}</strong> site
           </span>
         </div>
       )}

@@ -1,14 +1,25 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>INFRANEXIA — Dashboard Monitoring Regional Sumatera</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script type="module" crossorigin src="/assets/index-BpQ7q2rO.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DUTut7jS.css">
+    <script>
+      try {
+        if ((localStorage.getItem('infranexia-theme') || 'dark') === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+    <script type="module" crossorigin src="/assets/index-DtTdu6TU.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B9lJoYwZ.css">
   </head>
-  <body class="bg-slate-900 text-slate-100 antialiased min-h-screen">
+  <body class="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-slate-100 antialiased min-h-screen">
     <div id="root"></div>
   </body>
 </html>

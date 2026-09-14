@@ -83,33 +83,33 @@ export function SiteMapPanel({ filteredRows = [], onSelectSite }) {
   const defaultCenter = [0.5071, 101.4478];
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Peta Sebaran Site</h2>
-          <p className="text-xs text-slate-400">
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Peta Sebaran Site</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Lokasi geografis ({mapData.length} site dengan koordinat valid)
           </p>
         </div>
 
         {/* Legend */}
         <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1.5 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
             <span className="nx-legend-pin bg-emerald-500" /> Closed
           </span>
-          <span className="flex items-center gap-1.5 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
             <span className="nx-legend-pin bg-blue-500" /> Open
           </span>
-          <span className="flex items-center gap-1.5 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
             <span className="nx-legend-pin bg-amber-500" /> Kendala
           </span>
-          <span className="flex items-center gap-1.5 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
             <span className="nx-legend-pin bg-rose-500" /> Drop
           </span>
         </div>
       </div>
 
-      <div className="h-[500px] w-full rounded-lg overflow-hidden border border-slate-800 relative z-0">
+      <div className="h-[500px] w-full rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 relative z-0">
         <MapContainer
           center={defaultCenter}
           zoom={6}

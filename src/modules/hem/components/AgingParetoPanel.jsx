@@ -46,11 +46,11 @@ export function AgingParetoPanel({ filteredRows = [], activeBucket = null, onSel
   }, [filteredRows]);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Analisis Durasi Order (Aging)</h2>
-          <p className="text-xs text-slate-400">Pengelompokan order open berdasarkan umur (klik bar untuk filter)</p>
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Analisis Durasi Order (Aging)</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Pengelompokan order open berdasarkan umur (klik bar untuk filter)</p>
         </div>
       </div>
 
@@ -69,8 +69,8 @@ export function AgingParetoPanel({ filteredRows = [], activeBucket = null, onSel
             <XAxis dataKey="name" stroke="#64748b" fontSize={11} angle={-15} textAnchor="end" />
             <YAxis stroke="#94a3b8" fontSize={11} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.5rem' }}
-              itemStyle={{ color: '#f8fafc' }}
+              contentStyle={{ backgroundColor: 'var(--nx-tooltip-bg)', borderColor: 'var(--nx-tooltip-border)', borderRadius: '0.5rem' }}
+              itemStyle={{ color: 'var(--nx-tooltip-text)' }}
               formatter={(val) => [`${val} Order Open`, 'Jumlah']}
             />
             <Bar dataKey="count" radius={[4, 4, 0, 0]} className="cursor-pointer">
@@ -90,3 +90,5 @@ export function AgingParetoPanel({ filteredRows = [], activeBucket = null, onSel
     </div>
   );
 }
+
+

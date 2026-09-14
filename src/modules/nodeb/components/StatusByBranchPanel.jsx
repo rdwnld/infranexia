@@ -22,11 +22,11 @@ export function StatusByBranchPanel({ filteredRows = [], activeDistrict = null, 
   }, [filteredRows]);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-slate-100 font-semibold text-lg">Status by Branch / District</h2>
-          <p className="text-xs text-slate-400">Breakdown status site per wilayah (klik bar untuk filter)</p>
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Status by Branch / District</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Breakdown status site per wilayah (klik bar untuk filter)</p>
         </div>
       </div>
 
@@ -52,8 +52,8 @@ export function StatusByBranchPanel({ filteredRows = [], activeDistrict = null, 
               tickFormatter={(v) => v.length > 15 ? `${v.slice(0, 13)}...` : v}
             />
             <Tooltip
-              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.5rem' }}
-              itemStyle={{ color: '#f8fafc' }}
+              contentStyle={{ backgroundColor: 'var(--nx-tooltip-bg)', borderColor: 'var(--nx-tooltip-border)', borderRadius: '0.5rem' }}
+              itemStyle={{ color: 'var(--nx-tooltip-text)' }}
             />
             <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
             <Bar dataKey="CLOSED" stackId="a" fill="#10b981" className="cursor-pointer" />
@@ -66,3 +66,5 @@ export function StatusByBranchPanel({ filteredRows = [], activeDistrict = null, 
     </div>
   );
 }
+
+
