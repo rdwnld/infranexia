@@ -77,6 +77,7 @@ bagian Blocker di bawah)
 - [x] Laporan Telegram otomatis — digest gabungan 3 modul 1x sehari + tombol kirim manual, hanya di halaman Ringkasan (client-side, token di localStorage)
 - [x] Digest Telegram via GitHub Actions terjadwal (tanpa buka halaman) — `scripts/telegram-digest.mjs` + `.github/workflows/telegram-digest.yml`
 - [x] Bot perintah Tingkat 1 (`bot/bot.js` long-polling, tanpa dependensi) — `/laporan /nodeb /hem /olo /help`, token via `.env` (git-ignored)
+- [x] Bot mode webhook untuk Vercel (`api/telegram.js` + `bot/commands.js` bersama + `bot/set-webhook.mjs`)
 - [ ] Simulasi/proyeksi (perlu spesifikasi bisnis terpisah sebelum dikerjakan — jangan mulai tanpa
       requirement jelas dari user)
 
