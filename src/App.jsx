@@ -29,12 +29,12 @@ export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
-        <Route path="/" element={<Navigate to="/all/node-b" replace />} />
+        <Route path="/" element={<Navigate to="/all/hem" replace />} />
         <Route path="/:regional" element={<RegionLayout />}>
-          <Route index element={<Navigate to="node-b" replace />} />
+          <Route index element={<Navigate to="hem" replace />} />
           <Route path=":module" element={<RouteWrapper />} />
         </Route>
-        <Route path="*" element={<Navigate to="/all/node-b" replace />} />
+        <Route path="*" element={<Navigate to="/all/hem" replace />} />
       </Routes>
     </BrowserRouter>
   );
