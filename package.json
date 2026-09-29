@@ -3,6 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "npmClient": "npm",
+  "pnpm": {
+    "allowBuilds": [
+      "esbuild"
+    ]
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,6 +18,7 @@
   },
   "dependencies": {
     "@tanstack/react-table": "^8.20.5",
+    "esbuild": "^0.28.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
