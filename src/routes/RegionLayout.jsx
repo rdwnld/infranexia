@@ -5,14 +5,13 @@ import { REGIONS, getRegionInfo } from '../regions/regionConfig';
 import { useTheme } from '../shared/theme/ThemeContext';
 
 const MODULES = [
-  { key: 'node-b', label: 'Modul NODE B', icon: Radio, active: 'border-sky-400 text-sky-600 dark:text-sky-300 bg-sky-500/10' },
   { key: 'hem', label: 'Modul HEM', icon: Layers, active: 'border-emerald-400 text-emerald-600 dark:text-emerald-300 bg-emerald-500/10' },
   { key: 'olo', label: 'Modul OLO', icon: MapPin, active: 'border-purple-400 text-purple-600 dark:text-purple-300 bg-purple-500/10' },
   { key: 'summary', label: 'Ringkasan', icon: LayoutDashboard, active: 'border-amber-400 text-amber-600 dark:text-amber-300 bg-amber-500/10' },
 ];
 
 export function RegionLayout() {
-  const { regional = 'all', module = 'node-b' } = useParams();
+  const { regional = 'all', module = 'hem' } = useParams();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);

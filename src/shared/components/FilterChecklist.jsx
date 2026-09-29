@@ -56,7 +56,7 @@ export function FilterChecklist({
                       : 'bg-slate-200 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
-                  {st.name}
+                  {st.name} {st.count !== undefined && <span className="ml-1 opacity-70 font-mono text-[10px]">({st.count})</span>}
                 </button>
               );
             })}

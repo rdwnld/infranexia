@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { LayoutDashboard } from 'lucide-react';
 import { useHemData } from '../modules/hem/hooks/useHemData';
-import { useNodeBData } from '../modules/nodeb/hooks/useNodeBData';
 import { REGION_BADGES } from '../regions/regionConfig';
 import { STAGES } from '../modules/hem/hem.stageRules';
 import { LoadingState } from '../shared/components/LoadingState';
@@ -13,12 +12,6 @@ import { SummaryTelegramPanel } from './SummaryTelegramPanel';
 function classifyHemOlo(r) {
   if (r.stage === STAGES.GOLIVE_UT) return 'golive';
   if (r.stage === STAGES.APPROVED_DROP || r.stage === STAGES.PROPOSED_DROP) return 'drop';
-  return 'open';
-}
-
-function classifyNodeB(r) {
-  if (r.statusLapangan === 'CLOSED') return 'golive';
-  if (r.statusLapangan === 'DROP') return 'drop';
   return 'open';
 }
 
@@ -103,10 +96,9 @@ function ModuleSummarySection({ title, badge, rows, accent, classify, closedLabe
 export function SummaryPage() {
   const hem = useHemData('ALL', false);
   const olo = useHemData('ALL', true);
-  const nodeb = useNodeBData('ALL');
 
-  const loading = hem.loading || olo.loading || nodeb.loading;
-  const error = hem.error || olo.error || nodeb.error;
+  const loading = hem.loading || olo.loading;
+  const error = hem.error || olo.error;
 
   if (loading) {
     return <LoadingState message="Memuat ringkasan lintas-regional..." />;
@@ -119,7 +111,6 @@ export function SummaryPage() {
         onRetry={() => {
           hem.refresh();
           olo.refresh();
-          nodeb.refresh();
         }}
       />
     );
@@ -135,19 +126,15 @@ export function SummaryPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <DataRefreshBar label="NODE B" lastUpdated={nodeb.lastUpdated} onRefresh={nodeb.refresh} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DataRefreshBar label="HEM" lastUpdated={hem.lastUpdated} onRefresh={hem.refresh} />
         <DataRefreshBar label="OLO" lastUpdated={olo.lastUpdated} onRefresh={olo.refresh} />
       </div>
 
-      <SummaryTelegramPanel nodebRows={nodeb.allRows} hemRows={hem.allRows} oloRows={olo.allRows} />
+      <SummaryTelegramPanel nodebRows={[]} hemRows={hem.allRows} oloRows={olo.allRows} />
 
-      <ModuleSummarySection title="Modul NODE B" badge="NODE B" rows={nodeb.allRows} accent="text-sky-600 dark:text-sky-300" classify={classifyNodeB} closedLabel="Closed" unitLabel="site" />
       <ModuleSummarySection title="Modul HEM" badge="HEM" rows={hem.allRows} accent="text-emerald-600 dark:text-emerald-300" classify={classifyHemOlo} />
       <ModuleSummarySection title="Modul OLO" badge="OLO" rows={olo.allRows} accent="text-purple-600 dark:text-purple-300" classify={classifyHemOlo} />
     </div>
   );
 }
-
-

@@ -39,15 +39,17 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
   // Baseline harian "data bergerak" (Fase 4) — dari rows regional, tanpa filter halaman
   const { previous, delta } = useDailyBaseline(isOlo ? 'olo' : 'hem', regional, rows);
 
-  const statusOptions = useMemo(() => [
-    { name: STAGES.GOLIVE_UT, color: 'emerald' },
-    { name: STAGES.INSTALASI, color: 'blue' },
-    { name: STAGES.FINISH_INSTALASI, color: 'sky' },
-    { name: STAGES.BISA_PT1, color: 'teal' },
-    { name: STAGES.PERSIAPAN, color: 'amber' },
-    { name: STAGES.PROPOSED_DROP, color: 'orange' },
-    { name: STAGES.APPROVED_DROP, color: 'rose' },
-  ], []);
+  const statusOptions = useMemo(() => {
+    const counts = {};
+    rows.forEach(r => {
+      if (r.progressLapangan && r.progressLapangan !== 'UNKNOWN') {
+        counts[r.progressLapangan] = (counts[r.progressLapangan] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [rows]);
 
   // tglOrder sudah dinormalisasi ke ISO YYYY-MM-DD di hem.parser.js
   const formatDateForInput = (val) => {

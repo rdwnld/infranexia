@@ -95,7 +95,7 @@ export function useHemFilters(rawRows = []) {
 
       // Multi-select filters (AND logic)
       if (state.multiSelect.district.size > 0 && !state.multiSelect.district.has(row.district)) return false;
-      if (state.multiSelect.stage.size > 0 && !state.multiSelect.stage.has(row.stage)) return false;
+      if (state.multiSelect.stage.size > 0 && !state.multiSelect.stage.has(row.progressLapangan)) return false;
 
       return true;
     });
