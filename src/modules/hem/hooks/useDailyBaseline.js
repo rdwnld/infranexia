@@ -26,7 +26,7 @@ export function useDailyBaseline(moduleKey, region, rows = []) {
     if (!rows || rows.length === 0) return;
     const prev = saveTodayAndGetPrevious(moduleKey, region, current);
     setPrevious(prev);
-  }, [moduleKey, region, current]);
+  }, [moduleKey, region, rows.length, current.total, current.golive, current.open, current.drop]);
 
   const delta = useMemo(() => {
     if (!previous) return null;

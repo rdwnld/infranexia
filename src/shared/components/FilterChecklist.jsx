@@ -43,7 +43,7 @@ export function FilterChecklist({
 
           {/* Status Multi-select */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium mr-1 shrink-0">Status:</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium mr-1 shrink-0">Progress Lapangan:</span>
             {statusOptions.map(st => {
               const isChecked = multiSelect.stage?.has(st.name);
               return (
