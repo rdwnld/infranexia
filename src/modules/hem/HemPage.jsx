@@ -14,6 +14,7 @@ import { FilterChecklist } from '../../shared/components/FilterChecklist';
 import { LoadingState } from '../../shared/components/LoadingState';
 import { ErrorState } from '../../shared/components/ErrorState';
 import { BaselineStrip } from './components/BaselineStrip';
+import { DonutChartPanel } from '../../shared/components/DonutChartPanel';
 import { InsightPanel } from './components/InsightPanel';
 import { useDailyBaseline } from './hooks/useDailyBaseline';
 import { STAGES } from './hem.stageRules';
@@ -74,6 +75,15 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
     <div className="space-y-6">
       {/* Last updated + refresh manual (FR-4) */}
       <DataRefreshBar label={moduleTitle} lastUpdated={lastUpdated} onRefresh={refresh} />
+
+      {/* Donut Chart Persentase Status (dihitung dari data asli, FR-XX) */}
+      <DonutChartPanel
+        rows={rows}
+        title={`Persentase Status Deployment ${moduleTitle}`}
+        groupByKey="stage"
+        activeCategory={state.singleSelect.stage}
+        onSelectCategory={toggleSingleSelect}
+      />
 
       {/* Baseline harian vs kemarin (Fase 4) */}
       <BaselineStrip delta={delta} previousDate={previous?.date} />
