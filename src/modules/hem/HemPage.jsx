@@ -100,7 +100,7 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
       {/* Top Profiling KPI Cards */}
       <ProfilingOrderPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
 
-      {/* Filter Bar with Calendar Date Picker for Commitment Period */}
+       {/* Filter Bar with Calendar Date Picker for Commitment Period */}
       <FilterChecklist
         allRows={rows}
         multiSelect={state.multiSelect}
@@ -112,7 +112,14 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
         showCommitmentPeriod={true}
         activeCommitmentPeriod={activePeriodFormatted}
         onSelectCommitmentPeriod={(val) => toggleSingleSelect('commitmentPeriod', val)}
+        onSelectPriority={(val) => toggleSingleSelect('priorityByRSO', val)}
       />
+
+      {/* OPEN LOP & DETAIL STATUS OPEN LOP Matrix */}
+      <OpenLopMatrixPanel filteredRows={filteredRows} />
+
+      {/* Tabel Data Detail LOP */}
+      <DataTablePanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
 
       {/* Status Deployment Flowchart */}
       <StatusDeploymentPanel
@@ -153,12 +160,6 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
 
       {/* Order Map (full width) */}
       <OrderMapPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
-
-      {/* OPEN LOP & DETAIL STATUS OPEN LOP Matrix */}
-      <OpenLopMatrixPanel filteredRows={filteredRows} />
-
-      {/* Tabel Data Detail LOP */}
-      <DataTablePanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
     </div>
   );
 }
