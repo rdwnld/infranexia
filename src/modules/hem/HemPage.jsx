@@ -17,6 +17,7 @@ import { BaselineStrip } from './components/BaselineStrip';
 import { DonutChartPanel } from '../../shared/components/DonutChartPanel';
 import { InsightPanel } from './components/InsightPanel';
 import { DataTablePanel } from './components/DataTablePanel';
+import { OpenLopMatrixPanel } from './components/OpenLopMatrixPanel';
 import { useDailyBaseline } from './hooks/useDailyBaseline';
 import { STAGES } from './hem.stageRules';
 
@@ -152,6 +153,9 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
 
       {/* Order Map (full width) */}
       <OrderMapPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
+
+      {/* OPEN LOP & DETAIL STATUS OPEN LOP Matrix */}
+      <OpenLopMatrixPanel filteredRows={filteredRows} />
 
       {/* Tabel Data Detail LOP */}
       <DataTablePanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
