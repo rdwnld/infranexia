@@ -14,10 +14,10 @@ export function loadTelegramSettings() {
     return {
       botToken: parsed.botToken || '',
       chatId: parsed.chatId || '',
-      autoSend: parsed.autoSend !== false,
+      autoSend: parsed.autoSend === true,
     };
   } catch {
-    return { botToken: '', chatId: '', autoSend: true };
+    return { botToken: '', chatId: '', autoSend: false };
   }
 }
 
@@ -91,7 +91,11 @@ export async function sendTelegramMessage({ botToken, chatId, text }) {
   const res = await fetch(`https://api.telegram.org/bot${botToken.trim()}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId.trim(), text }),
+    body: JSON.stringify({
+      chat_id: chatId.trim(),
+      text,
+      parse_mode: 'Markdown',
+    }),
   });
   if (!res.ok) {
     throw new Error(`Telegram HTTP ${res.status} — cek token & koneksi.`);

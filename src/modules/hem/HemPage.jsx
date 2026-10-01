@@ -37,7 +37,7 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
   }, [regional, resetFilters]);
 
   // Baseline harian "data bergerak" (Fase 4) — dari rows regional, tanpa filter halaman
-  const { previous, delta } = useDailyBaseline(isOlo ? 'olo' : 'hem', regional, rows);
+  const { previous, delta, current } = useDailyBaseline(isOlo ? 'olo' : 'hem', regional, rows);
 
   const statusOptions = useMemo(() => {
     const counts = {};
@@ -88,7 +88,12 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
       />
 
       {/* Baseline harian vs kemarin (Fase 4) */}
-      <BaselineStrip delta={delta} previousDate={previous?.date} />
+      <BaselineStrip
+        delta={delta}
+        previousDate={previous?.date}
+        current={current}
+        previousStats={previous?.stats}
+      />
 
       {/* Top Profiling KPI Cards */}
       <ProfilingOrderPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />

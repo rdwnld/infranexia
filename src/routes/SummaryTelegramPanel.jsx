@@ -7,6 +7,7 @@ import {
   alreadyAutoSentToday,
   markAutoSentToday,
 } from '../shared/utils/telegram';
+import { saveTodayAndGetPrevious, formatBaselineDate } from '../shared/utils/snapshot';
 import { STAGES } from '../modules/hem/hem.stageRules';
 
 const SCOPE_KEY = 'summary-daily';
@@ -42,17 +43,47 @@ function fmt(n) {
 }
 
 function buildSummaryText({ nodeb, hem, olo }) {
-  const lines = ['INFRANEXIA — Ringkasan Harian (ALL)'];
-  try {
-    lines.push(new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }));
-  } catch { /* abaikan */ }
-  lines.push('');
-  const block = (label, unit, s, closedLabel) => {
-    lines.push(`${label} (${fmt(s.total)} ${unit}): ${closedLabel} ${fmt(s.golive)} (${s.ach}%) | Open ${fmt(s.open)} | Drop ${fmt(s.drop)}`);
+  const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  const lines = [
+    `*INFRANEXIA — Laporan Ringkasan Harian*`,
+    `Tanggal: ${dateStr}`,
+    ``,
+  ];
+
+  const formatBlock = (moduleKey, label, unit, s, closedLabel) => {
+    lines.push(`*Modul ${label}*`);
+    const prev = saveTodayAndGetPrevious(moduleKey, 'ALL', s);
+    if (prev && prev.stats) {
+      const p = prev.stats;
+      const dTotal = s.total - (p.total || 0);
+      const dGolive = s.golive - (p.golive || 0);
+      const dOpen = s.open - (p.open || 0);
+      const dDrop = s.drop - (p.drop || 0);
+      const prevDateFormatted = formatBaselineDate(prev.date);
+
+      const fDelta = (val) => {
+        if (val === 0) return '±0';
+        return `${val > 0 ? '+' : ''}${fmt(val)}`;
+      };
+
+      lines.push(`- Total ${unit}: *${fmt(s.total)}* (Kemarin: ${fmt(p.total)} | Selisih: ${fDelta(dTotal)})`);
+      lines.push(`- ${closedLabel}: *${fmt(s.golive)}* (${s.ach}%) (Kemarin: ${fmt(p.golive)} | Selisih: ${fDelta(dGolive)})`);
+      lines.push(`- In Progress (Open): *${fmt(s.open)}* (Kemarin: ${fmt(p.open)} | Selisih: ${fDelta(dOpen)})`);
+      lines.push(`- Drop: *${fmt(s.drop)}* (Kemarin: ${fmt(p.drop)} | Selisih: ${fDelta(dDrop)})`);
+      lines.push(`_(Pembanding: Data tanggal ${prevDateFormatted})_`);
+    } else {
+      lines.push(`- Total ${unit}: *${fmt(s.total)}*`);
+      lines.push(`- ${closedLabel}: *${fmt(s.golive)}* (${s.ach}%)`);
+      lines.push(`- In Progress (Open): *${fmt(s.open)}*`);
+      lines.push(`- Drop: *${fmt(s.drop)}*`);
+      lines.push(`_(Baseline pertama tersimpan untuk perbandingan besok)_`);
+    }
+    lines.push(``);
   };
-  block('NODE B', 'site', nodeb, 'Closed');
-  block('HEM', 'order', hem, 'Golive');
-  block('OLO', 'order', olo, 'Golive');
+
+  formatBlock('hem', 'HEM', 'order', hem, 'Golive / UT');
+  formatBlock('olo', 'OLO', 'order', olo, 'Golive / UT');
+
   return lines.join('\n');
 }
 
@@ -95,17 +126,10 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
     }
   }, [settings.botToken, settings.chatId, nodebRows, hemRows, oloRows]);
 
-  // Produksi: auto-send maksimal 1x sehari saat halaman Ringkasan dibuka
+  // Auto-send dinonaktifkan atas permintaan user
   useEffect(() => {
-    if (autoAttempted.current || !ready) return;
-    if (!settings.autoSend || !configured) return;
-    if (alreadyAutoSentToday(SCOPE_KEY)) return;
-    autoAttempted.current = true;
-    doSend(true).then(ok => {
-      if (ok) markAutoSentToday(SCOPE_KEY);
-      else autoAttempted.current = false;
-    });
-  }, [ready, settings.autoSend, configured, doSend]);
+    // Tidak ada pengiriman otomatis
+  }, []);
 
   const handleSave = () => {
     saveTelegramSettings(settings);
