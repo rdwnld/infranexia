@@ -94,7 +94,7 @@ function summarizeHemOlo(table) {
     else if (stage === 'Approved Drop' || stage === 'Proposed Drop') drop++;
     else open++;
   }
-  return { total, golive, open, drop, ach: total ? Number(((golive / total) * 100).toFixed(1)) : 0 };
+  return { total, golive, open, drop, ach: total ? Number((((golive + drop) / total) * 100).toFixed(1)) : 0 };
 }
 
 const fmt = (n) => Number(n || 0).toLocaleString('id-ID');

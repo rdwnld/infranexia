@@ -18,7 +18,7 @@ export function useDailyBaseline(moduleKey, region, rows = []) {
       else if (r.stage && r.stage.toUpperCase().includes('DROP')) drop++;
       else open++;
     });
-    const ach = total > 0 ? Number(((golive / total) * 100).toFixed(1)) : 0;
+    const ach = total > 0 ? Number((((golive + drop) / total) * 100).toFixed(1)) : 0;
     return { total, golive, open, drop, ach };
   }, [rows]);
 

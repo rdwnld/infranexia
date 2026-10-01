@@ -22,7 +22,7 @@ function summarizeHemOlo(rows = []) {
     else if (r.stage === STAGES.APPROVED_DROP || r.stage === STAGES.PROPOSED_DROP) drop++;
     else open++;
   });
-  return { total, golive, open, drop, ach: total > 0 ? Number(((golive / total) * 100).toFixed(1)) : 0 };
+  return { total, golive, open, drop, ach: total > 0 ? Number((((golive + drop) / total) * 100).toFixed(1)) : 0 };
 }
 
 function summarizeNodeB(rows = []) {

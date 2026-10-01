@@ -32,7 +32,7 @@ function aggregateByRegion(rows, classify) {
     const b = result[badge];
     return {
       ...b,
-      ach: b.total > 0 ? Number(((b.golive / b.total) * 100).toFixed(1)) : 0,
+      ach: b.total > 0 ? Number((((b.golive + b.drop) / b.total) * 100).toFixed(1)) : 0,
     };
   });
 }
