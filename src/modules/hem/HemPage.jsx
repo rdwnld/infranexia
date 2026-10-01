@@ -3,7 +3,6 @@ import { useHemData } from './hooks/useHemData';
 import { useHemFilters } from './hooks/useHemFilters';
 import { DataRefreshBar } from '../../shared/components/DataRefreshBar';
 import { ProfilingOrderPanel } from './components/ProfilingOrderPanel';
-import { StatusDeploymentPanel } from './components/StatusDeploymentPanel';
 import { DistrictMatrixPanel } from './components/DistrictMatrixPanel';
 import { AgingParetoPanel } from './components/AgingParetoPanel';
 import { AchClosedPanel } from './components/AchClosedPanel';
@@ -120,13 +119,6 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
 
       {/* Tabel Data Detail LOP */}
       <DataTablePanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
-
-      {/* Status Deployment Flowchart */}
-      <StatusDeploymentPanel
-        filteredRows={filteredRows}
-        activeStage={state.singleSelect.stage}
-        onSelectStage={toggleSingleSelect}
-      />
 
       {/* Matrix District x Stage */}
       <DistrictMatrixPanel
