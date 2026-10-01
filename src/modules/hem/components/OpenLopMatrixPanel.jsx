@@ -3,16 +3,23 @@ import { Layers, ListFilter } from 'lucide-react';
 import { REGION_BADGES } from '../../../regions/regionConfig';
 
 export function OpenLopMatrixPanel({ filteredRows = [] }) {
-  // Hanya ambil order yang open (!isClosed dan bukan drop)
+  // Hanya ambil order yang open (termasuk Rekon, kecuali Closed/Golive, Drop, Hold, dan Bisa PT1)
   const openRows = useMemo(() => {
     return filteredRows.filter(r => {
+      if (!r) return false;
       const stage = (r.stage || '').toLowerCase();
+      const prog = (r.progressLapangan || '').toUpperCase();
+      const sub = (r.subStatus || '').toUpperCase();
       const isDrop = stage.includes('drop');
-      return !r.isClosed && !isDrop;
+      const isGolive = r.isClosed;
+      const isHold = prog.includes('HOLD') || sub.includes('HOLD');
+      const isBisaPt1 = prog.includes('BISA PT1') || sub.includes('BISA PT1');
+
+      return !isGolive && !isDrop && !isHold && !isBisaPt1;
     });
   }, [filteredRows]);
 
-  // Tabel 1: Progress Lapangan x Region (Kecuali BISA PT1 & HOLD)
+  // Tabel 1: Progress Lapangan x Region (Termasuk Rekon, kecuali BISA PT1 & HOLD)
   const progressMatrix = useMemo(() => {
     const map = {};
     const regions = REGION_BADGES;
@@ -37,7 +44,7 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
       .sort((a, b) => b.total - a.total);
   }, [openRows]);
 
-  // Tabel 2: Sub Status x Region (Kecuali BISA PT1 & HOLD)
+  // Tabel 2: Sub Status x Region (Termasuk Rekon, kecuali BISA PT1 & HOLD)
   const subStatusMatrix = useMemo(() => {
     const map = {};
     const regions = REGION_BADGES;
@@ -100,9 +107,9 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
           </span>
         </div>
 
-        <div className="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-lg">
+        <div className="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-lg max-h-[380px]">
           <table className="w-full text-left border-collapse text-xs">
-            <thead>
+            <thead className="sticky top-0 z-10">
               <tr className="bg-sky-600 text-white font-semibold border-b border-sky-700 uppercase text-[11px]">
                 <th className="p-2.5">Progress Lapangan</th>
                 <th className="p-2.5 text-center">SBU</th>
