@@ -90,9 +90,9 @@ export function NodeBPage({ regional = 'ALL' }) {
       </div>
 
       {/* Map Panel */}
-      <SiteMapPanel
+      {/* <SiteMapPanel
         filteredRows={filteredRows}
-      />
+      /> */}
     </div>
   );
 }

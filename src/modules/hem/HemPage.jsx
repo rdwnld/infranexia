@@ -151,7 +151,7 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
       </div>
 
       {/* Order Map (full width) */}
-      <OrderMapPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
+      {/* <OrderMapPanel filteredRows={filteredRows} moduleTitle={moduleTitle} /> */}
     </div>
   );
 }
