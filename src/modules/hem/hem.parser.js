@@ -98,6 +98,7 @@ export function parseHemRows(table, isOlo = false) {
     ? colIndex(cols, 'Komitmen Golive', -1)
     : colIndex(cols, 'TARGET GOLIVE', isOlo ? 22 : 22);
   const iJenisKabel = colIndex(cols, 'Jenis Kabel', isOlo ? 35 : 54);
+  const iRealGolive = colIndex(cols, 'Tanggal Golive Real', isOlo ? 23 : 32);
   const iPriorityRso = colIndex(cols, 'PRIORITY BY RSO', 64);
   const iPrioritas = colIndex(cols, 'PRIORITAS', 68);
 
@@ -148,6 +149,7 @@ export function parseHemRows(table, isOlo = false) {
       subStagePersiapan,
       isClosed,
       targetGolive: parseSheetDateISO(getCellValue(row, iTargetGolive, '')),
+      realisasiGolive: parseSheetDateISO(getCellValue(row, iRealGolive, '')),
       jenisKabel: String(getCellValue(row, iJenisKabel, '-')).trim() || '-',
       priorityByRSO,
     });

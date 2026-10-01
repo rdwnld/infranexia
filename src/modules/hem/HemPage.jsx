@@ -17,6 +17,7 @@ import { DonutChartPanel } from '../../shared/components/DonutChartPanel';
 import { InsightPanel } from './components/InsightPanel';
 import { DataTablePanel } from './components/DataTablePanel';
 import { OpenLopMatrixPanel } from './components/OpenLopMatrixPanel';
+import { SCurveChartPanel } from './components/SCurveChartPanel';
 import { useDailyBaseline } from './hooks/useDailyBaseline';
 import { STAGES } from './hem.stageRules';
 
@@ -130,6 +131,9 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
           onSelectBucket={toggleSingleSelect}
         />
       </div>
+
+      {/* Kurva S (Komitmen vs Realisasi Golive) */}
+      <SCurveChartPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
 
       {/* Ach Closed — tiga bar chart terpisah (FR-18) */}
       <AchClosedPanel
