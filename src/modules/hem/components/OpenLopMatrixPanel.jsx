@@ -12,10 +12,10 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
     });
   }, [filteredRows]);
 
-  // Tabel 1: Progress Lapangan x Region
+  // Tabel 1: Progress Lapangan x Region (Kecuali BISA PT1 & HOLD)
   const progressMatrix = useMemo(() => {
-    const map = {}; // progress -> { SBU: count, SBT: count, SBS: count, total: count }
-    const regions = REGION_BADGES; // ['SBU', 'SBT', 'SBS']
+    const map = {};
+    const regions = REGION_BADGES;
 
     openRows.forEach(r => {
       const prog = r.progressLapangan || 'UNKNOWN';
@@ -29,12 +29,17 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
       map[prog].total++;
     });
 
-    return Object.values(map).sort((a, b) => b.total - a.total);
+    return Object.values(map)
+      .filter(row => {
+        const n = row.name.toUpperCase();
+        return !n.includes('BISA PT1') && !n.includes('HOLD');
+      })
+      .sort((a, b) => b.total - a.total);
   }, [openRows]);
 
-  // Tabel 2: Sub Status x Region
+  // Tabel 2: Sub Status x Region (Kecuali BISA PT1 & HOLD)
   const subStatusMatrix = useMemo(() => {
-    const map = {}; // subStatus -> { SBU: count, SBT: count, SBS: count, total: count }
+    const map = {};
     const regions = REGION_BADGES;
 
     openRows.forEach(r => {
@@ -49,7 +54,12 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
       map[sub].total++;
     });
 
-    return Object.values(map).sort((a, b) => b.total - a.total);
+    return Object.values(map)
+      .filter(row => {
+        const n = row.name.toUpperCase();
+        return !n.includes('BISA PT1') && !n.includes('HOLD');
+      })
+      .sort((a, b) => b.total - a.total);
   }, [openRows]);
 
   const totalProgress = useMemo(() => {
