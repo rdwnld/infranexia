@@ -94,6 +94,8 @@ export function parseHemRows(table, isOlo = false) {
   const iKlafDurasi = colIndex(cols, 'klaf durasi order', isOlo ? 30 : 35);
   const iTglOrder = colIndex(cols, isOlo ? 'TANGGAL ORDER' : 'Tanggal submit order nde', isOlo ? 14 : 33);
   const iNoOrder = colIndex(cols, 'NO ORDER', isOlo ? 2 : 41);
+  const iTargetGolive = colIndex(cols, 'TARGET GOLIVE', isOlo ? 22 : 38);
+  const iJenisKabel = colIndex(cols, 'Jenis Kabel', isOlo ? 35 : 54);
 
   const parsed = [];
 
@@ -137,6 +139,8 @@ export function parseHemRows(table, isOlo = false) {
       stage,
       subStagePersiapan,
       isClosed,
+      targetGolive: parseSheetDateISO(getCellValue(row, iTargetGolive, '')),
+      jenisKabel: String(getCellValue(row, iJenisKabel, '-')).trim() || '-',
     });
   }
 
