@@ -99,7 +99,7 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
       {/* Top Profiling KPI Cards */}
       <ProfilingOrderPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
 
-       {/* Filter Bar with Calendar Date Picker for Commitment Period */}
+       {/* Filter Bar */}
       <FilterChecklist
         allRows={rows}
         multiSelect={state.multiSelect}
@@ -108,10 +108,6 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
         onResetFilters={resetFilters}
         isFiltered={isFiltered}
         statusOptions={statusOptions}
-        showCommitmentPeriod={true}
-        activeCommitmentPeriod={activePeriodFormatted}
-        onSelectCommitmentPeriod={(val) => toggleSingleSelect('commitmentPeriod', val)}
-        onSelectPriority={(val) => toggleSingleSelect('priorityByRSO', val)}
       />
 
       {/* OPEN LOP & DETAIL STATUS OPEN LOP Matrix */}

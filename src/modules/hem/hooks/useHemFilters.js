@@ -9,12 +9,12 @@ const initialState = {
     batchOrder: null,
     subkon: null,
     mitra: null,
-    commitmentPeriod: null,
   },
   multiSelect: {
     district: new Set(),
     stage: new Set(),
     priorityByRSO: new Set(),
+    commitmentPeriod: new Set(),
   },
   localToggles: {
     achGroupBy: 'district', // district, batch, subkon
@@ -98,6 +98,7 @@ export function useHemFilters(rawRows = []) {
       if (state.multiSelect.district.size > 0 && !state.multiSelect.district.has(row.district)) return false;
       if (state.multiSelect.stage.size > 0 && !state.multiSelect.stage.has(row.progressLapangan)) return false;
       if (state.multiSelect.priorityByRSO.size > 0 && !state.multiSelect.priorityByRSO.has(row.priorityByRSO)) return false;
+      if (state.multiSelect.commitmentPeriod.size > 0 && !state.multiSelect.commitmentPeriod.has(row.targetGolive)) return false;
 
       return true;
     });

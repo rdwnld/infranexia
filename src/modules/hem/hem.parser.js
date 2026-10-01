@@ -94,7 +94,9 @@ export function parseHemRows(table, isOlo = false) {
   const iKlafDurasi = colIndex(cols, 'klaf durasi order', isOlo ? 30 : 35);
   const iTglOrder = colIndex(cols, isOlo ? 'TANGGAL ORDER' : 'Tanggal submit order nde', isOlo ? 14 : 33);
   const iNoOrder = colIndex(cols, 'NO ORDER', isOlo ? 2 : 41);
-  const iTargetGolive = colIndex(cols, 'TARGET GOLIVE', isOlo ? 22 : 38);
+  const iTargetGolive = colIndex(cols, 'Komitmen Golive', -1) !== -1
+    ? colIndex(cols, 'Komitmen Golive', -1)
+    : colIndex(cols, 'TARGET GOLIVE', isOlo ? 22 : 22);
   const iJenisKabel = colIndex(cols, 'Jenis Kabel', isOlo ? 35 : 54);
   const iPriorityRso = colIndex(cols, 'PRIORITY BY RSO', 64);
   const iPrioritas = colIndex(cols, 'PRIORITAS', 68);
