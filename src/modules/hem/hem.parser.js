@@ -96,6 +96,8 @@ export function parseHemRows(table, isOlo = false) {
   const iNoOrder = colIndex(cols, 'NO ORDER', isOlo ? 2 : 41);
   const iTargetGolive = colIndex(cols, 'TARGET GOLIVE', isOlo ? 22 : 38);
   const iJenisKabel = colIndex(cols, 'Jenis Kabel', isOlo ? 35 : 54);
+  const iPriorityRso = colIndex(cols, 'PRIORITY BY RSO', 64);
+  const iPrioritas = colIndex(cols, 'PRIORITAS', 68);
 
   const parsed = [];
 
@@ -119,6 +121,10 @@ export function parseHemRows(table, isOlo = false) {
 
     const isClosed = stage === STAGES.GOLIVE_UT || String(getCellValue(row, iStatus, '')).toUpperCase().includes('CLOSED');
 
+    const valRso = String(getCellValue(row, iPriorityRso, '')).trim();
+    const valPrio = String(getCellValue(row, iPrioritas, '')).trim();
+    const priorityByRSO = (valPrio && valPrio !== '-' ? valPrio : (valRso && valRso !== '-' ? valRso : '-'));
+
     parsed.push({
       id: `${isOlo ? 'olo' : 'hem'}-${r}-${noOrder || r}`,
       noOrder,
@@ -141,6 +147,7 @@ export function parseHemRows(table, isOlo = false) {
       isClosed,
       targetGolive: parseSheetDateISO(getCellValue(row, iTargetGolive, '')),
       jenisKabel: String(getCellValue(row, iJenisKabel, '-')).trim() || '-',
+      priorityByRSO,
     });
   }
 
