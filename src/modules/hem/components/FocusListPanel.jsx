@@ -3,9 +3,16 @@ import { AlertCircle } from 'lucide-react';
 
 export function FocusListPanel({ filteredRows = [] }) {
   const focusItems = useMemo(() => {
-    // Top-5 open orders with oldest aging bucket
+    // Top-5 open orders (excluding Drop, Golive, Rekon, Uji Terima) with oldest aging
     return filteredRows
-      .filter(r => !r.isClosed && r.agingBucket)
+      .filter(r => {
+        if (r.isClosed) return false;
+        const stage = (r.stage || '').toLowerCase();
+        const prog = (r.progressLapangan || '').toLowerCase();
+        if (stage.includes('drop')) return false;
+        if (prog.includes('golive') || prog.includes('uji terima') || prog.includes('rekon')) return false;
+        return Boolean(r.agingBucket);
+      })
       .sort((a, b) => b.agingBucket.localeCompare(a.agingBucket))
       .slice(0, 5);
   }, [filteredRows]);
