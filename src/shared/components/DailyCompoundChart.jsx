@@ -5,45 +5,25 @@ import { Activity } from 'lucide-react';
 export function DailyCompoundChart({ 
   rows = [], 
   title = "Compound Harian — Realisasi vs Target/Rencana", 
-  subtitle = "Perbandingan harian (7 hari terakhir) berdasarkan Tanggal Target/Rencana vs Tanggal Realisasi",
+  subtitle = "Perbandingan harian (7 hari kalender terakhir hingga hari ini) berdasarkan Tanggal Target/Rencana vs Tanggal Realisasi",
   getTargetDate = r => r.targetGolive || r.tglOrder,
   getRealDate = r => r.realisasiGolive || r.tglOrder
 }) {
   const chartData = useMemo(() => {
-    if (!rows || rows.length === 0) return [];
+    // 1. Tentukan hari ini (endDate) berdasarkan system date / current date
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
 
-    const dateMap = {};
+    // 2. Buat array persis 7 hari kalender (hari ini - 6 hari s.d. hari ini)
+    const calendarDays = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
 
-    rows.forEach(r => {
-      const tDate = getTargetDate(r);
-      const rDate = getRealDate(r);
-
-      if (tDate) {
-        const d = String(tDate).slice(0, 10);
-        if (d && d.length === 10) {
-          if (!dateMap[d]) dateMap[d] = { date: d, Target: 0, Realisasi: 0 };
-          dateMap[d].Target++;
-        }
-      }
-      if (rDate) {
-        const d = String(rDate).slice(0, 10);
-        if (d && d.length === 10) {
-          if (!dateMap[d]) dateMap[d] = { date: d, Target: 0, Realisasi: 0 };
-          dateMap[d].Realisasi++;
-        }
-      }
-    });
-
-    // Urutkan kronologis (dari lama ke baru)
-    const allDates = Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
-
-    // Ambil maksimal 7 hari terbaru
-    const latest7 = allDates.slice(-7);
-
-    return latest7.map(item => {
-      let displayDate = item.date;
+      let displayDate = dateStr;
       try {
-        const parts = item.date.split('-');
+        const parts = dateStr.split('-');
         if (parts.length === 3) {
           const monthNum = parseInt(parts[1], 10);
           const day = parseInt(parts[2], 10);
@@ -53,29 +33,44 @@ export function DailyCompoundChart({
       } catch {
         // fallback
       }
-      return {
-        ...item,
-        displayDate,
-      };
-    });
-  }, [rows, getTargetDate, getRealDate]);
 
-  if (chartData.length === 0) {
-    return (
-      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
-        <div className="mb-4">
-          <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-lg flex items-center gap-2">
-            <Activity className="w-5 h-5 text-sky-500" />
-            {title}
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
-        </div>
-        <div className="h-64 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
-          Tidak ada data tanggal target/realisasi yang tersedia untuk cakupan ini.
-        </div>
-      </div>
-    );
-  }
+      calendarDays.push({
+        date: dateStr,
+        displayDate,
+        Target: 0,
+        Realisasi: 0,
+      });
+    }
+
+    const dateMap = {};
+    calendarDays.forEach(item => {
+      dateMap[item.date] = item;
+    });
+
+    // 3. Masukkan data aktual ke dalam 7 hari kalender tersebut
+    if (rows && rows.length > 0) {
+      rows.forEach(r => {
+        const tDate = getTargetDate(r);
+        const rDate = getRealDate(r);
+
+        if (tDate) {
+          const dStr = String(tDate).slice(0, 10);
+          if (dateMap[dStr]) {
+            dateMap[dStr].Target++;
+          }
+        }
+        if (rDate) {
+          const dStr = String(rDate).slice(0, 10);
+          if (dateMap[dStr]) {
+            dateMap[dStr].Realisasi++;
+          }
+        }
+      });
+    }
+
+    // calendarDays sudah terurut kronologis dari yang paling lama ke hari ini
+    return calendarDays;
+  }, [rows, getTargetDate, getRealDate]);
 
   return (
     <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
