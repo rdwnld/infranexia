@@ -18,6 +18,7 @@ import { InsightPanel } from './components/InsightPanel';
 import { DataTablePanel } from './components/DataTablePanel';
 import { OpenLopMatrixPanel } from './components/OpenLopMatrixPanel';
 import { SCurveChartPanel } from './components/SCurveChartPanel';
+import { DailyCompoundChart } from '../../shared/components/DailyCompoundChart';
 import { useDailyBaseline } from './hooks/useDailyBaseline';
 import { STAGES } from './hem.stageRules';
 
@@ -134,6 +135,9 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
 
       {/* Kurva S (Komitmen vs Realisasi Golive) */}
       <SCurveChartPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
+
+      {/* Compound Harian — Realisasi vs Target/Rencana */}
+      <DailyCompoundChart rows={rows} title={`Compound Harian — Realisasi vs Target/Rencana (${moduleTitle})`} />
 
       {/* Ach Closed — tiga bar chart terpisah (FR-18) */}
       <AchClosedPanel
