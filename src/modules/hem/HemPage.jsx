@@ -4,7 +4,7 @@ import { useHemFilters } from './hooks/useHemFilters';
 import { DataRefreshBar } from '../../shared/components/DataRefreshBar';
 import { ProfilingOrderPanel } from './components/ProfilingOrderPanel';
 import { DistrictMatrixPanel } from './components/DistrictMatrixPanel';
-import { AgingParetoPanel } from './components/AgingParetoPanel';
+import { AgingOrderTablePanel } from './components/AgingOrderTablePanel';
 import { AchClosedPanel } from './components/AchClosedPanel';
 import { FocusListPanel } from './components/FocusListPanel';
 import { OrderMapPanel } from './components/OrderMapPanel';
@@ -136,12 +136,16 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
         onSelectMatrixCell={handleMatrixCellClick}
       />
 
-      {/* Grid 1: Aging Pareto */}
+      {/* Grid 1: Aging Matrix Table */}
       <div className="grid grid-cols-1 gap-6">
-        <AgingParetoPanel
+        <AgingOrderTablePanel
           filteredRows={filteredRows}
-          activeBucket={state.singleSelect.agingBucket}
-          onSelectBucket={toggleSingleSelect}
+          activeProgress={state.singleSelect.progressLapangan}
+          activeBatch={state.singleSelect.batchOrder}
+          onSelectCell={(prog, batch) => {
+            toggleSingleSelect('progressLapangan', prog);
+            toggleSingleSelect('batchOrder', batch);
+          }}
         />
       </div>
 
