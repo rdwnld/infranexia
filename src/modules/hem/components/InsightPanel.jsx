@@ -106,7 +106,7 @@ export function InsightPanel({ filteredRows = [] }) {
       <div className="flex items-center gap-2 mb-3">
         <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
         <div>
-          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Insight Otomatis</h2>
+          <h2 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Insight</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">Ringkasan naratif dari data yang sedang tampil</p>
         </div>
       </div>
