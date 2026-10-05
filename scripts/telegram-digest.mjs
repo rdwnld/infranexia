@@ -1,22 +1,27 @@
 /**
- * telegram-digest.mjs — Digest otomatis INFRANEXIA via GitHub Actions (cron).
- * Fetch Google Sheets (gviz, tanpa auth) → agregasi → kirim ke Telegram.
+ * telegram-digest.mjs — Alert overdue otomatis INFRANEXIA via GitHub Actions (cron).
+ * Fetch Google Sheets (gviz, tanpa auth) → cari order open yang Komitmen
+ * Golive-nya sudah lewat hari ini → kirim daftarnya ke Telegram.
  *
  * Secrets yang dibutuhkan di repo GitHub:
  *   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
  *
- * Jalankan manual:  node scripts/telegram-digest.mjs
+ * Jadwal cron (lihat .github/workflows/telegram-digest.yml):
+ *   08.00 WIB setiap hari (= 01.00 UTC).
+ *
+ * Jalankan manual:  TELEGRAM_BOT_TOKEN=xxx TELEGRAM_CHAT_ID=yyy node scripts/telegram-digest.mjs
+ *   atau via tombol "Run workflow" di GitHub Actions.
  */
 
-const SPREADSHEET_ID = '1dnXcxcN9uhmBff_Sau5Yz4kBpTZeDtt-Otf7EmHREqM';
-const GIDS = { NODE_B: '636051156', HEM: '1129058778', OLO: '1544967736' };
+const SPREADSHEET_ID = '1sQuMVrp-GAZu4TrUO5bn3Ul5fLELgNa_rIWDGAI-ujU';
+const GIDS = { HEM: '1129058778', OLO: '1544967736' };
+const MAX_LIST_PER_MODULE = 20;
 
 const norm = (s) => String(s || '').trim().toLowerCase().replace(/[\s_]+/g, '');
 
 function findCol(cols, name) {
   const target = norm(name);
-  const idx = cols.findIndex(c => c && norm(c.label || c.id) === target);
-  return idx;
+  return cols.findIndex(c => c && norm(c.label || c.id) === target);
 }
 
 function cellVal(row, idx) {
@@ -24,6 +29,35 @@ function cellVal(row, idx) {
   const cell = row.c[idx];
   if (!cell) return '';
   return cell.v ?? cell.f ?? '';
+}
+
+// Ubah nilai tanggal gviz ("Date(2026,6,13)", ISO, dsb.) jadi YYYY-MM-DD; '' kalau bukan tanggal valid
+function toISODate(raw) {
+  if (raw === null || raw === undefined || raw === '') return '';
+  const str = String(raw).trim();
+  const gviz = str.match(/Date\((\d+),\s*(\d+),\s*(\d+)/);
+  if (gviz) {
+    const y = gviz[1];
+    const m = String(Number(gviz[2]) + 1).padStart(2, '0');
+    const d = String(gviz[3]).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  return '';
+}
+
+// Tanggal hari ini dalam WIB (runner GitHub jalan di UTC)
+function todayWIB() {
+  const now = new Date(Date.now() + 7 * 3600 * 1000);
+  const y = now.getUTCFullYear();
+  const m = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(now.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function escapeMd(s) {
+  return String(s ?? '').replace(/([*_`[])/g, '\\$1');
 }
 
 async function loadSheet(gid, headers) {
@@ -41,15 +75,6 @@ async function loadSheet(gid, headers) {
   return payload.table;
 }
 
-function normalizeRegion(raw) {
-  const s = String(raw || '').trim().toUpperCase();
-  if (!s) return '';
-  if (s === 'SBU' || s.includes('SUMBAGUT')) return 'SBU';
-  if (s === 'SBT' || s.includes('SUMBAGTENG')) return 'SBT';
-  if (s === 'SBS' || s.includes('SUMBAGSEL')) return 'SBS';
-  return s;
-}
-
 function hemStage(progressRaw) {
   const str = String(progressRaw || '').trim().toUpperCase();
   if (!str) return 'UNKNOWN';
@@ -64,40 +89,67 @@ function hemStage(progressRaw) {
   return 'UNKNOWN';
 }
 
-function summarizeNodeB(table) {
-  const iRegion = findCol(table.cols, 'REGION');
-  const iStatus = findCol(table.cols, 'Status Lapangan');
-  let total = 0, closed = 0, open = 0, drop = 0;
-  for (const row of table.rows || []) {
-    if (iRegion < 0 || !normalizeRegion(cellVal(row, iRegion))) continue;
-    const st = String(cellVal(row, iStatus, '')).trim().toUpperCase();
-    if (!st) continue;
-    total++;
-    if (st === 'CLOSED') closed++;
-    else if (st === 'DROP') drop++;
-    else open++;
-  }
-  return { total, golive: closed, open, drop, ach: total ? Number(((closed / total) * 100).toFixed(1)) : 0 };
-}
-
-function summarizeHemOlo(table) {
-  const iRegion = findCol(table.cols, 'REGION');
+// Kembalikan daftar order overdue: Komitmen Golive < hari ini, belum Golive/Closed, bukan Drop
+function findOverdue(table, isOlo) {
   const iProgress = findCol(table.cols, 'Progress Lapangan');
-  let total = 0, golive = 0, open = 0, drop = 0;
+  const iKomitmen = findCol(table.cols, 'Komitmen Golive');
+  const iTarget = findCol(table.cols, 'TARGET GOLIVE');
+  const iDistrict = findCol(table.cols, 'DISTRICT');
+  const iNama = findCol(table.cols, isOlo ? 'NAMA PROYEK' : 'NAMA LOP');
+  const iStatus = findCol(table.cols, isOlo ? 'Status Order' : 'Status');
+  const today = todayWIB();
+
+  const out = [];
   for (const row of table.rows || []) {
-    const region = normalizeRegion(cellVal(row, iRegion));
     const prog = String(cellVal(row, iProgress, '')).trim();
-    if (!region || !prog) continue;
-    total++;
+    const komitmen = toISODate(cellVal(row, iKomitmen >= 0 ? iKomitmen : iTarget, ''));
+    if (!prog || !komitmen || komitmen >= today) continue;
     const stage = hemStage(prog);
-    if (stage === 'Golive / UT') golive++;
-    else if (stage === 'Approved Drop' || stage === 'Proposed Drop') drop++;
-    else open++;
+    if (stage === 'Golive / UT') continue;
+    if (stage === 'Approved Drop' || stage === 'Proposed Drop') continue;
+    if (String(cellVal(row, iStatus, '')).toUpperCase().includes('CLOSED')) continue;
+    out.push({
+      nama: String(cellVal(row, iNama, '')).trim() || '(tanpa nama)',
+      district: String(cellVal(row, iDistrict, '')).trim().toUpperCase() || '-',
+      komitmen,
+      daysLate: Math.round((Date.parse(today) - Date.parse(komitmen)) / 86400000),
+    });
   }
-  return { total, golive, open, drop, ach: total ? Number((((golive + drop) / total) * 100).toFixed(1)) : 0 };
+  out.sort((a, b) => b.daysLate - a.daysLate);
+  return out;
 }
 
 const fmt = (n) => Number(n || 0).toLocaleString('id-ID');
+
+function buildMessage(hemOverdue, oloOverdue) {
+  const dateStr = new Date().toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric',
+  });
+  const lines = [
+    `*INFRANEXIA — Order Overdue (Otomatis 08.00)*`,
+    `Tanggal: ${dateStr}`,
+    ``,
+  ];
+
+  const block = (label, list) => {
+    lines.push(`*Modul ${label} — ${fmt(list.length)} order overdue*`);
+    if (list.length === 0) {
+      lines.push(`- Tidak ada order overdue.`);
+    } else {
+      list.slice(0, MAX_LIST_PER_MODULE).forEach(r => {
+        lines.push(`- *${escapeMd(r.nama)}* | ${escapeMd(r.district)} | Komitmen ${r.komitmen} | Telat ${r.daysLate} hari`);
+      });
+      if (list.length > MAX_LIST_PER_MODULE) {
+        lines.push(`- ... dan ${fmt(list.length - MAX_LIST_PER_MODULE)} order overdue lainnya.`);
+      }
+    }
+    lines.push(``);
+  };
+
+  block('HEM', hemOverdue);
+  block('OLO', oloOverdue);
+  return lines.join('\n');
+}
 
 async function main() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -106,36 +158,25 @@ async function main() {
     throw new Error('Secrets TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID belum di-set.');
   }
 
-  const [nodebTable, hemTable, oloTable] = await Promise.all([
-    loadSheet(GIDS.NODE_B, 2),
+  const [hemTable, oloTable] = await Promise.all([
     loadSheet(GIDS.HEM, 1),
     loadSheet(GIDS.OLO, 1),
   ]);
 
-  const nb = summarizeNodeB(nodebTable);
-  const hem = summarizeHemOlo(hemTable);
-  const olo = summarizeHemOlo(oloTable);
-
-  const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-  const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-  const lines = [
-    `INFRANEXIA — Ringkasan Otomatis • ${dateStr} ${timeStr}`,
-    '',
-    `NODE B (${fmt(nb.total)} site): Closed ${fmt(nb.golive)} (${nb.ach}%) | Open ${fmt(nb.open)} | Drop ${fmt(nb.drop)}`,
-    `HEM (${fmt(hem.total)} order): Golive ${fmt(hem.golive)} (${hem.ach}%) | Open ${fmt(hem.open)} | Drop ${fmt(hem.drop)}`,
-    `OLO (${fmt(olo.total)} order): Golive ${fmt(olo.golive)} (${olo.ach}%) | Open ${fmt(olo.open)} | Drop ${fmt(olo.drop)}`,
-  ];
+  const hemOverdue = findOverdue(hemTable, false);
+  const oloOverdue = findOverdue(oloTable, true);
+  const text = buildMessage(hemOverdue, oloOverdue);
 
   const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: lines.join('\n') }),
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' }),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok || !json.ok) {
     throw new Error(`Telegram gagal: ${json.description || `HTTP ${res.status}`}`);
   }
-  console.log('Digest terkirim:', lines.join(' | '));
+  console.log(`Alert overdue terkirim: HEM ${hemOverdue.length}, OLO ${oloOverdue.length}.`);
 }
 
 main().catch(err => {
