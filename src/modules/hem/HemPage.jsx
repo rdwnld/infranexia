@@ -27,8 +27,10 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
   const {
     state,
     filteredRows,
+    cardFilteredRows,
     toggleSingleSelect,
     toggleMultiSelectItem,
+    setCellFilter,
     resetFilters,
     isFiltered,
   } = useHemFilters(rows);
@@ -98,7 +100,11 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
       />
 
       {/* Top Profiling KPI Cards */}
-      <ProfilingOrderPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
+      <ProfilingOrderPanel
+        filteredRows={cardFilteredRows}
+        activeCard={state.singleSelect.profilingCard}
+        onSelectCard={(cardKey) => toggleSingleSelect('profilingCard', cardKey === 'ALL' ? null : cardKey)}
+      />
 
        {/* Filter Bar */}
       <FilterChecklist
@@ -112,7 +118,13 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
       />
 
       {/* OPEN LOP & DETAIL STATUS OPEN LOP Matrix */}
-      <OpenLopMatrixPanel filteredRows={filteredRows} />
+      <OpenLopMatrixPanel
+        filteredRows={filteredRows}
+        activeProgress={state.singleSelect.progressLapangan}
+        activeSubStatus={state.singleSelect.subStatus}
+        activeRegion={state.singleSelect.selectedRegion}
+        onSelectCell={setCellFilter}
+      />
 
       {/* Tabel Data Detail LOP */}
       <DataTablePanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
