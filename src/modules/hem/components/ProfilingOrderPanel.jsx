@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Layers, CheckCircle2, Clock, XCircle, AlertTriangle, Zap } from 'lucide-react';
 import { STAGES, SUB_STAGES_PERSIAPAN } from '../hem.stageRules';
 
-export function ProfilingOrderPanel({ filteredRows = [] }) {
+export function ProfilingOrderPanel({ filteredRows = [], activeCard = null, onSelectCard }) {
   const stats = useMemo(() => {
     let allLop = filteredRows.length;
     let golive = 0;
@@ -31,6 +31,7 @@ export function ProfilingOrderPanel({ filteredRows = [] }) {
 
   const cards = [
     {
+      key: 'ALL',
       label: 'ALL LOP',
       value: stats.allLop,
       icon: Layers,
@@ -38,6 +39,7 @@ export function ProfilingOrderPanel({ filteredRows = [] }) {
       valueColor: 'text-slate-900 dark:text-slate-100',
     },
     {
+      key: 'GOLIVE',
       label: 'GOLIVE',
       value: stats.golive,
       icon: CheckCircle2,
@@ -45,6 +47,7 @@ export function ProfilingOrderPanel({ filteredRows = [] }) {
       valueColor: 'text-emerald-600 dark:text-emerald-400',
     },
     {
+      key: 'BISA_PT1',
       label: 'BISA PT1',
       value: stats.bisaPt1,
       icon: Zap,
@@ -52,6 +55,7 @@ export function ProfilingOrderPanel({ filteredRows = [] }) {
       valueColor: 'text-teal-600 dark:text-teal-400',
     },
     {
+      key: 'OGP',
       label: 'OGP',
       value: stats.ogp,
       icon: Clock,
@@ -59,6 +63,7 @@ export function ProfilingOrderPanel({ filteredRows = [] }) {
       valueColor: 'text-amber-600 dark:text-amber-400',
     },
     {
+      key: 'DROP',
       label: 'DROP',
       value: stats.drop,
       icon: XCircle,
@@ -66,6 +71,7 @@ export function ProfilingOrderPanel({ filteredRows = [] }) {
       valueColor: 'text-rose-600 dark:text-rose-400',
     },
     {
+      key: 'HOLD',
       label: 'HOLD',
       value: stats.hold,
       icon: AlertTriangle,
@@ -78,23 +84,34 @@ export function ProfilingOrderPanel({ filteredRows = [] }) {
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
       {cards.map((card) => {
         const Icon = card.icon;
+        const isActive = (activeCard === card.key) || (!activeCard && card.key === 'ALL');
         return (
-          <div
-            key={card.label}
-            className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center gap-3 shadow-md"
+          <button
+            key={card.key}
+            type="button"
+            onClick={() => onSelectCard(card.key)}
+            className={`bg-white dark:bg-slate-900/80 border rounded-xl p-4 flex items-center gap-3 shadow-md text-left transition-all cursor-pointer ${
+              isActive
+                ? 'ring-2 ring-sky-500 border-sky-500 bg-sky-500/10 dark:bg-sky-500/15 shadow-sky-500/10'
+                : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+            }`}
+            title={`Klik untuk memfilter status ${card.label}`}
           >
             <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ${card.color}`}>
               <Icon className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate flex items-center gap-1">
                 {card.label}
+                {isActive && card.key !== 'ALL' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                )}
               </div>
               <div className={`text-xl sm:text-2xl font-bold font-mono ${card.valueColor}`}>
                 {card.value.toLocaleString('id-ID')}
               </div>
             </div>
-          </div>
+          </button>
         );
       })}
     </div>

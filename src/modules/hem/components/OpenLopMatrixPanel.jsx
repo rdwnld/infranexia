@@ -2,7 +2,13 @@ import React, { useMemo } from 'react';
 import { Layers, ListFilter } from 'lucide-react';
 import { REGION_BADGES } from '../../../regions/regionConfig';
 
-export function OpenLopMatrixPanel({ filteredRows = [] }) {
+export function OpenLopMatrixPanel({
+  filteredRows = [],
+  activeProgress = null,
+  activeSubStatus = null,
+  activeRegion = null,
+  onSelectCell = () => {},
+}) {
   // Hanya ambil order yang open (termasuk Rekon, kecuali Closed/Golive, Drop, Hold, dan Bisa PT1)
   const openRows = useMemo(() => {
     return filteredRows.filter(r => {
@@ -96,8 +102,8 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
       {/* Tabel 1: OPEN LOP (Progress Lapangan x Region) */}
-      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
+        <div className="flex items-center justify-between mb-2">
           <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-base flex items-center gap-2">
             <Layers className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             OPEN LOP
@@ -106,6 +112,9 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
             REGION / JLH LOP
           </span>
         </div>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
+          💡 Klik pada angka (SBU, SBT, SBS, Total) di tabel untuk memfilter data sesuai region & progress
+        </p>
 
         <div className="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-lg max-h-[380px]">
           <table className="w-full text-left border-collapse text-xs">
@@ -119,15 +128,81 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {progressMatrix.map((row) => (
-                <tr key={row.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-800 dark:text-slate-200">
-                  <td className="p-2.5 font-medium truncate max-w-[160px]" title={row.name}>{row.name}</td>
-                  <td className="p-2.5 text-center font-mono">{row.SBU || '-'}</td>
-                  <td className="p-2.5 text-center font-mono">{row.SBT || '-'}</td>
-                  <td className="p-2.5 text-center font-mono">{row.SBS || '-'}</td>
-                  <td className="p-2.5 text-center font-mono font-bold text-sky-600 dark:text-sky-400">{row.total}</td>
-                </tr>
-              ))}
+              {progressMatrix.map((row) => {
+                const isProgActive = activeProgress === row.name;
+                return (
+                  <tr
+                    key={row.name}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-800 dark:text-slate-200 transition-colors"
+                  >
+                    <td className="p-2.5 font-medium truncate max-w-[160px]" title={row.name}>{row.name}</td>
+                    <td className="p-2.5 text-center font-mono">
+                      {row.SBU > 0 ? (
+                        <button
+                          onClick={() => onSelectCell('progress', row.name, 'SBU')}
+                          className={`px-2 py-0.5 rounded text-xs font-semibold transition-all ${
+                            isProgActive && activeRegion === 'SBU'
+                              ? 'bg-sky-600 text-white font-bold ring-2 ring-sky-300'
+                              : 'bg-sky-500/10 text-sky-700 dark:text-sky-300 hover:bg-sky-500/30'
+                          }`}
+                          title="Klik untuk filter progress ini di region SBU"
+                        >
+                          {row.SBU}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-center font-mono">
+                      {row.SBT > 0 ? (
+                        <button
+                          onClick={() => onSelectCell('progress', row.name, 'SBT')}
+                          className={`px-2 py-0.5 rounded text-xs font-semibold transition-all ${
+                            isProgActive && activeRegion === 'SBT'
+                              ? 'bg-sky-600 text-white font-bold ring-2 ring-sky-300'
+                              : 'bg-sky-500/10 text-sky-700 dark:text-sky-300 hover:bg-sky-500/30'
+                          }`}
+                          title="Klik untuk filter progress ini di region SBT"
+                        >
+                          {row.SBT}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-center font-mono">
+                      {row.SBS > 0 ? (
+                        <button
+                          onClick={() => onSelectCell('progress', row.name, 'SBS')}
+                          className={`px-2 py-0.5 rounded text-xs font-semibold transition-all ${
+                            isProgActive && activeRegion === 'SBS'
+                              ? 'bg-sky-600 text-white font-bold ring-2 ring-sky-300'
+                              : 'bg-sky-500/10 text-sky-700 dark:text-sky-300 hover:bg-sky-500/30'
+                          }`}
+                          title="Klik untuk filter progress ini di region SBS"
+                        >
+                          {row.SBS}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-center font-mono font-bold">
+                      <button
+                        onClick={() => onSelectCell('progress', row.name, null)}
+                        className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
+                          isProgActive && activeRegion === null
+                            ? 'bg-sky-600 text-white ring-2 ring-sky-300'
+                            : 'text-sky-600 dark:text-sky-400 hover:bg-sky-500/20'
+                        }`}
+                        title="Klik untuk filter progress ini di semua region"
+                      >
+                        {row.total}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
             <tfoot>
               <tr className="bg-slate-100 dark:bg-slate-950/80 font-bold text-slate-900 dark:text-slate-100 border-t border-slate-300 dark:border-slate-700">
@@ -143,8 +218,8 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
       </div>
 
       {/* Tabel 2: DETAIL STATUS OPEN LOP (Sub Status x Region) */}
-      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg flex flex-col">
+        <div className="flex items-center justify-between mb-2">
           <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-base flex items-center gap-2">
             <ListFilter className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             DETAIL STATUS OPEN LOP
@@ -153,6 +228,9 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
             REGION / JLH LOP
           </span>
         </div>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
+          💡 Klik pada angka (SBU, SBT, SBS, Total) di tabel untuk memfilter data sesuai region & sub status
+        </p>
 
         <div className="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-lg max-h-[380px]">
           <table className="w-full text-left border-collapse text-xs">
@@ -166,15 +244,81 @@ export function OpenLopMatrixPanel({ filteredRows = [] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {subStatusMatrix.map((row) => (
-                <tr key={row.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-800 dark:text-slate-200">
-                  <td className="p-2.5 font-medium truncate max-w-[160px]" title={row.name}>{row.name}</td>
-                  <td className="p-2.5 text-center font-mono">{row.SBU || '-'}</td>
-                  <td className="p-2.5 text-center font-mono">{row.SBT || '-'}</td>
-                  <td className="p-2.5 text-center font-mono">{row.SBS || '-'}</td>
-                  <td className="p-2.5 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.total}</td>
-                </tr>
-              ))}
+              {subStatusMatrix.map((row) => {
+                const isSubActive = activeSubStatus === row.name;
+                return (
+                  <tr
+                    key={row.name}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-800 dark:text-slate-200 transition-colors"
+                  >
+                    <td className="p-2.5 font-medium truncate max-w-[160px]" title={row.name}>{row.name}</td>
+                    <td className="p-2.5 text-center font-mono">
+                      {row.SBU > 0 ? (
+                        <button
+                          onClick={() => onSelectCell('subStatus', row.name, 'SBU')}
+                          className={`px-2 py-0.5 rounded text-xs font-semibold transition-all ${
+                            isSubActive && activeRegion === 'SBU'
+                              ? 'bg-emerald-600 text-white font-bold ring-2 ring-emerald-300'
+                              : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30'
+                          }`}
+                          title="Klik untuk filter sub status ini di region SBU"
+                        >
+                          {row.SBU}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-center font-mono">
+                      {row.SBT > 0 ? (
+                        <button
+                          onClick={() => onSelectCell('subStatus', row.name, 'SBT')}
+                          className={`px-2 py-0.5 rounded text-xs font-semibold transition-all ${
+                            isSubActive && activeRegion === 'SBT'
+                              ? 'bg-emerald-600 text-white font-bold ring-2 ring-emerald-300'
+                              : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30'
+                          }`}
+                          title="Klik untuk filter sub status ini di region SBT"
+                        >
+                          {row.SBT}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-center font-mono">
+                      {row.SBS > 0 ? (
+                        <button
+                          onClick={() => onSelectCell('subStatus', row.name, 'SBS')}
+                          className={`px-2 py-0.5 rounded text-xs font-semibold transition-all ${
+                            isSubActive && activeRegion === 'SBS'
+                              ? 'bg-emerald-600 text-white font-bold ring-2 ring-emerald-300'
+                              : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30'
+                          }`}
+                          title="Klik untuk filter sub status ini di region SBS"
+                        >
+                          {row.SBS}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-center font-mono font-bold">
+                      <button
+                        onClick={() => onSelectCell('subStatus', row.name, null)}
+                        className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
+                          isSubActive && activeRegion === null
+                            ? 'bg-emerald-600 text-white ring-2 ring-emerald-300'
+                            : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+                        }`}
+                        title="Klik untuk filter sub status ini di semua region"
+                      >
+                        {row.total}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
             <tfoot>
               <tr className="bg-slate-100 dark:bg-slate-950/80 font-bold text-slate-900 dark:text-slate-100 border-t border-slate-300 dark:border-slate-700">

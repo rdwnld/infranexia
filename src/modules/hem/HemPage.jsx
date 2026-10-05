@@ -27,8 +27,10 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
   const {
     state,
     filteredRows,
+    cardFilteredRows,
     toggleSingleSelect,
     toggleMultiSelectItem,
+    setCellFilter,
     resetFilters,
     isFiltered,
   } = useHemFilters(rows);
@@ -98,7 +100,11 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
       />
 
       {/* Top Profiling KPI Cards */}
-      <ProfilingOrderPanel filteredRows={filteredRows} moduleTitle={moduleTitle} />
+      <ProfilingOrderPanel
+        filteredRows={cardFilteredRows}
+        activeCard={state.singleSelect.profilingCard}
+        onSelectCard={(cardKey) => toggleSingleSelect('profilingCard', cardKey === 'ALL' ? null : cardKey)}
+      />
 
        {/* Filter Bar */}
       <FilterChecklist
@@ -111,8 +117,41 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
         statusOptions={statusOptions}
       />
 
+      {/* Filter Active Badge Indicator */}
+      {isFiltered && (
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sky-600 dark:text-sky-400">Filter Aktif:</span>
+            <span>
+              Menampilkan <strong className="text-slate-900 dark:text-slate-100">{filteredRows.length}</strong> dari{' '}
+              <strong className="text-slate-900 dark:text-slate-100">{rows.length}</strong> order
+            </span>
+            {(state.singleSelect.profilingCard || state.singleSelect.progressLapangan || state.singleSelect.subStatus || state.singleSelect.selectedRegion) && (
+              <span className="flex items-center gap-1.5 ml-2 font-mono text-[11px] bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded border border-sky-500/20">
+                {state.singleSelect.profilingCard && `Card: ${state.singleSelect.profilingCard}`}
+                {state.singleSelect.progressLapangan && `Progress: ${state.singleSelect.progressLapangan}`}
+                {state.singleSelect.subStatus && `SubStatus: ${state.singleSelect.subStatus}`}
+                {state.singleSelect.selectedRegion && `Region: ${state.singleSelect.selectedRegion}`}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={resetFilters}
+            className="text-xs text-rose-600 dark:text-rose-400 hover:underline font-semibold"
+          >
+            Reset Semua Filter
+          </button>
+        </div>
+      )}
+
       {/* OPEN LOP & DETAIL STATUS OPEN LOP Matrix */}
-      <OpenLopMatrixPanel filteredRows={filteredRows} />
+      <OpenLopMatrixPanel
+        filteredRows={cardFilteredRows}
+        activeProgress={state.singleSelect.progressLapangan}
+        activeSubStatus={state.singleSelect.subStatus}
+        activeRegion={state.singleSelect.selectedRegion}
+        onSelectCell={setCellFilter}
+      />
 
       {/* Tabel Data Detail LOP */}
       <DataTablePanel filteredRows={filteredRows} moduleTitle={moduleTitle} />

@@ -1,4 +1,5 @@
 import { useReducer, useMemo, useCallback } from 'react';
+import { STAGES, SUB_STAGES_PERSIAPAN } from '../hem.stageRules';
 
 const initialState = {
   singleSelect: {
@@ -9,6 +10,11 @@ const initialState = {
     batchOrder: null,
     subkon: null,
     mitra: null,
+    commitmentPeriod: null,
+    profilingCard: null,
+    progressLapangan: null,
+    subStatus: null,
+    selectedRegion: null,
   },
   multiSelect: {
     district: new Set(),
@@ -31,6 +37,25 @@ function filterReducer(state, action) {
         singleSelect: {
           ...state.singleSelect,
           [key]: current === value ? null : value,
+        }
+      };
+    }
+    case 'SET_CELL_FILTER': {
+      const { type, name, reg } = action.payload;
+      const progKey = type === 'progress' ? 'progressLapangan' : 'subStatus';
+      const otherKey = type === 'progress' ? 'subStatus' : 'progressLapangan';
+
+      const currentProg = state.singleSelect[progKey];
+      const currentReg = state.singleSelect.selectedRegion;
+      const isSame = currentProg === name && currentReg === reg;
+
+      return {
+        ...state,
+        singleSelect: {
+          ...state.singleSelect,
+          [progKey]: isSame ? null : name,
+          [otherKey]: null,
+          selectedRegion: isSame ? null : reg,
         }
       };
     }
@@ -80,7 +105,7 @@ function filterReducer(state, action) {
 export function useHemFilters(rawRows = []) {
   const [state, dispatch] = useReducer(filterReducer, initialState);
 
-  const filteredRows = useMemo(() => {
+  const cardFilteredRows = useMemo(() => {
     if (!rawRows || rawRows.length === 0) return [];
 
     return rawRows.filter(row => {
@@ -93,6 +118,7 @@ export function useHemFilters(rawRows = []) {
       if (state.singleSelect.subkon && row.subkon !== state.singleSelect.subkon) return false;
       if (state.singleSelect.mitra && row.mitra !== state.singleSelect.mitra) return false;
       if (state.singleSelect.commitmentPeriod && row.tglOrder !== state.singleSelect.commitmentPeriod) return false;
+      if (state.singleSelect.selectedRegion && row.region !== state.singleSelect.selectedRegion) return false;
 
       // Multi-select filters (AND logic)
       if (state.multiSelect.district.size > 0 && !state.multiSelect.district.has(row.district)) return false;
@@ -104,6 +130,30 @@ export function useHemFilters(rawRows = []) {
     });
   }, [rawRows, state.singleSelect, state.multiSelect]);
 
+  const filteredRows = useMemo(() => {
+    return cardFilteredRows.filter(row => {
+      if (state.singleSelect.profilingCard && state.singleSelect.profilingCard !== 'ALL') {
+        const card = state.singleSelect.profilingCard;
+        const isHold = row.subStagePersiapan === SUB_STAGES_PERSIAPAN.HOLD || (row.progressLapangan && row.progressLapangan.toUpperCase().includes('HOLD'));
+        const isDrop = row.stage === STAGES.APPROVED_DROP || row.stage === STAGES.PROPOSED_DROP;
+        const isGolive = row.stage === STAGES.GOLIVE_UT;
+        const isBisaPt1 = row.stage === STAGES.BISA_PT1;
+        const isOgp = !isGolive && !isDrop && !isHold && !isBisaPt1;
+
+        if (card === 'GOLIVE' && !isGolive) return false;
+        if (card === 'BISA_PT1' && !isBisaPt1) return false;
+        if (card === 'OGP' && !isOgp) return false;
+        if (card === 'DROP' && !isDrop) return false;
+        if (card === 'HOLD' && !isHold) return false;
+      }
+
+      if (state.singleSelect.progressLapangan && row.progressLapangan !== state.singleSelect.progressLapangan) return false;
+      if (state.singleSelect.subStatus && row.subStatus !== state.singleSelect.subStatus) return false;
+
+      return true;
+    });
+  }, [cardFilteredRows, state.singleSelect.profilingCard, state.singleSelect.progressLapangan, state.singleSelect.subStatus]);
+
   const toggleSingleSelect = useCallback((key, value) => {
     dispatch({ type: 'TOGGLE_SINGLE_SELECT', payload: { key, value } });
   }, []);
@@ -114,6 +164,10 @@ export function useHemFilters(rawRows = []) {
 
   const setLocalToggle = useCallback((key, value) => {
     dispatch({ type: 'SET_LOCAL_TOGGLE', payload: { key, value } });
+  }, []);
+
+  const setCellFilter = useCallback((type, name, reg) => {
+    dispatch({ type: 'SET_CELL_FILTER', payload: { type, name, reg } });
   }, []);
 
   const resetFilters = useCallback(() => {
@@ -129,9 +183,11 @@ export function useHemFilters(rawRows = []) {
   return {
     state,
     filteredRows,
+    cardFilteredRows,
     toggleSingleSelect,
     toggleMultiSelectItem,
     setLocalToggle,
+    setCellFilter,
     resetFilters,
     isFiltered,
   };
