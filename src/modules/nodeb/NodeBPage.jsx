@@ -7,6 +7,7 @@ import { StatusByBranchPanel } from './components/StatusByBranchPanel';
 import { SubStatusPanel } from './components/SubStatusPanel';
 import { BatchOrderPanel } from './components/BatchOrderPanel';
 import { SiteMapPanel } from './components/SiteMapPanel';
+import { DailyCompoundChart } from '../../shared/components/DailyCompoundChart';
 import { FilterChecklist } from '../../shared/components/FilterChecklist';
 import { LoadingState } from '../../shared/components/LoadingState';
 import { ErrorState } from '../../shared/components/ErrorState';
@@ -88,6 +89,9 @@ export function NodeBPage({ regional = 'ALL' }) {
           onSelectBatch={toggleSingleSelect}
         />
       </div>
+
+      {/* Compound Harian — Realisasi vs Target/Rencana */}
+      <DailyCompoundChart rows={filteredRows} title="Compound Harian — Realisasi vs Target/Rencana (NODE B)" getTargetDate={r => r.tglOrder} getRealDate={r => r.tglOrder} />
 
       {/* Map Panel */}
       {/* <SiteMapPanel

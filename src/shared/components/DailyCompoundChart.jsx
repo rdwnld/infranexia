@@ -5,32 +5,25 @@ import { Activity } from 'lucide-react';
 export function DailyCompoundChart({ 
   rows = [], 
   title = "Compound Harian — Realisasi vs Target/Rencana", 
-  subtitle = "Perbandingan harian berdasarkan Tanggal Komitmen Golive (Target/Rencana) vs Tanggal Golive Real (Realisasi)" 
+  subtitle = "Perbandingan harian (7 hari kalender terakhir hingga hari ini) berdasarkan Tanggal Target/Rencana vs Tanggal Realisasi",
+  getTargetDate = r => r.targetGolive || r.tglOrder,
+  getRealDate = r => r.realisasiGolive || r.tglOrder
 }) {
   const chartData = useMemo(() => {
-    if (!rows || rows.length === 0) return [];
+    // 1. Tentukan hari ini (endDate) berdasarkan system date / current date
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
 
-    const dateMap = {};
+    // 2. Buat array persis 7 hari kalender (hari ini - 6 hari s.d. hari ini)
+    const calendarDays = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
 
-    rows.forEach(r => {
-      if (r.targetGolive) {
-        const d = r.targetGolive; // YYYY-MM-DD
-        if (!dateMap[d]) dateMap[d] = { date: d, Target: 0, Realisasi: 0 };
-        dateMap[d].Target++;
-      }
-      if (r.realisasiGolive) {
-        const d = r.realisasiGolive; // YYYY-MM-DD
-        if (!dateMap[d]) dateMap[d] = { date: d, Target: 0, Realisasi: 0 };
-        dateMap[d].Realisasi++;
-      }
-    });
-
-    const sortedDates = Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
-
-    return sortedDates.map(item => {
-      let displayDate = item.date;
+      let displayDate = dateStr;
       try {
-        const parts = item.date.split('-');
+        const parts = dateStr.split('-');
         if (parts.length === 3) {
           const monthNum = parseInt(parts[1], 10);
           const day = parseInt(parts[2], 10);
@@ -40,29 +33,44 @@ export function DailyCompoundChart({
       } catch {
         // fallback
       }
-      return {
-        ...item,
-        displayDate,
-      };
-    });
-  }, [rows]);
 
-  if (chartData.length === 0) {
-    return (
-      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
-        <div className="mb-4">
-          <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-lg flex items-center gap-2">
-            <Activity className="w-5 h-5 text-sky-500" />
-            {title}
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
-        </div>
-        <div className="h-64 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">
-          Tidak ada data tanggal target/realisasi yang tersedia untuk cakupan ini.
-        </div>
-      </div>
-    );
-  }
+      calendarDays.push({
+        date: dateStr,
+        displayDate,
+        Target: 0,
+        Realisasi: 0,
+      });
+    }
+
+    const dateMap = {};
+    calendarDays.forEach(item => {
+      dateMap[item.date] = item;
+    });
+
+    // 3. Masukkan data aktual ke dalam 7 hari kalender tersebut
+    if (rows && rows.length > 0) {
+      rows.forEach(r => {
+        const tDate = getTargetDate(r);
+        const rDate = getRealDate(r);
+
+        if (tDate) {
+          const dStr = String(tDate).slice(0, 10);
+          if (dateMap[dStr]) {
+            dateMap[dStr].Target++;
+          }
+        }
+        if (rDate) {
+          const dStr = String(rDate).slice(0, 10);
+          if (dateMap[dStr]) {
+            dateMap[dStr].Realisasi++;
+          }
+        }
+      });
+    }
+
+    // calendarDays sudah terurut kronologis dari yang paling lama ke hari ini
+    return calendarDays;
+  }, [rows, getTargetDate, getRealDate]);
 
   return (
     <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-lg">
@@ -85,7 +93,7 @@ export function DailyCompoundChart({
               fontSize={10}
               angle={-35}
               textAnchor="end"
-              interval={Math.max(0, Math.floor(chartData.length / 15))}
+              interval={0}
             />
             <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
             <Tooltip
@@ -99,7 +107,7 @@ export function DailyCompoundChart({
               labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
             />
             <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-            <Bar dataKey="Realisasi" name="Realisasi" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Realisasi" name="Realisasi" fill="#14b8a6" radius={[4, 4, 0, 0]} />
             <Bar dataKey="Target" name="Target/Rencana" fill="#f97316" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
