@@ -1,88 +1,71 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Send, Settings2, Loader2, CheckCircle2, AlertTriangle, BellRing } from 'lucide-react';
 import {
   loadTelegramSettings,
   saveTelegramSettings,
   sendTelegramMessage,
-  alreadyAutoSentToday,
-  markAutoSentToday,
 } from '../shared/utils/telegram';
-import { saveTodayAndGetPrevious, formatBaselineDate } from '../shared/utils/snapshot';
-import { STAGES } from '../modules/hem/hem.stageRules';
 
-const SCOPE_KEY = 'summary-daily';
-
-function summarizeHemOlo(rows = []) {
-  let total = rows.length;
-  let golive = 0;
-  let open = 0;
-  let drop = 0;
-  rows.forEach(r => {
-    if (r.isClosed) golive++;
-    else if (r.stage === STAGES.APPROVED_DROP || r.stage === STAGES.PROPOSED_DROP) drop++;
-    else open++;
-  });
-  return { total, golive, open, drop, ach: total > 0 ? Number((((golive + drop) / total) * 100).toFixed(1)) : 0 };
-}
-
-function summarizeNodeB(rows = []) {
-  let total = rows.length;
-  let closed = 0;
-  let open = 0;
-  let drop = 0;
-  rows.forEach(r => {
-    if (r.statusLapangan === 'CLOSED') closed++;
-    else if (r.statusLapangan === 'DROP') drop++;
-    else open++;
-  });
-  return { total, golive: closed, open, drop, ach: total > 0 ? Number(((closed / total) * 100).toFixed(1)) : 0 };
-}
+const MAX_LIST_PER_MODULE = 20;
 
 function fmt(n) {
   return Number(n || 0).toLocaleString('id-ID');
 }
 
-function buildSummaryText({ nodeb, hem, olo }) {
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Escape karakter Markdown Telegram agar nama order tidak merusak format pesan
+function escapeMd(s) {
+  return String(s ?? '').replace(/([*_`[])/g, '\\$1');
+}
+
+// Order open yang Komitmen Golive-nya sudah lewat hari ini (bukan Golive/Closed, bukan Drop)
+function getOverdueRows(rows = []) {
+  const today = todayISO();
+  return rows
+    .filter(r => {
+      if (!r || r.isClosed) return false;
+      if ((r.stage || '').toUpperCase().includes('DROP')) return false;
+      const t = r.targetGolive;
+      if (!t || !/^\d{4}-\d{2}-\d{2}/.test(t)) return false;
+      return t < today;
+    })
+    .map(r => ({
+      ...r,
+      daysLate: Math.round((Date.parse(today) - Date.parse(r.targetGolive)) / 86400000),
+    }))
+    .sort((a, b) => b.daysLate - a.daysLate);
+}
+
+function buildSummaryText({ hemRows = [], oloRows = [] }) {
   const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
   const lines = [
-    `*INFRANEXIA — Laporan Ringkasan Harian*`,
+    `*INFRANEXIA — Order Overdue*`,
     `Tanggal: ${dateStr}`,
     ``,
   ];
 
-  const formatBlock = (moduleKey, label, unit, s, closedLabel) => {
-    lines.push(`*Modul ${label}*`);
-    const prev = saveTodayAndGetPrevious(moduleKey, 'ALL', s);
-    if (prev && prev.stats) {
-      const p = prev.stats;
-      const dTotal = s.total - (p.total || 0);
-      const dGolive = s.golive - (p.golive || 0);
-      const dOpen = s.open - (p.open || 0);
-      const dDrop = s.drop - (p.drop || 0);
-      const prevDateFormatted = formatBaselineDate(prev.date);
-
-      const fDelta = (val) => {
-        if (val === 0) return '±0';
-        return `${val > 0 ? '+' : ''}${fmt(val)}`;
-      };
-
-      lines.push(`- Total ${unit}: *${fmt(s.total)}* (Kemarin: ${fmt(p.total)} | Selisih: ${fDelta(dTotal)})`);
-      lines.push(`- ${closedLabel}: *${fmt(s.golive)}* (${s.ach}%) (Kemarin: ${fmt(p.golive)} | Selisih: ${fDelta(dGolive)})`);
-      lines.push(`- In Progress (Open): *${fmt(s.open)}* (Kemarin: ${fmt(p.open)} | Selisih: ${fDelta(dOpen)})`);
-      lines.push(`- Drop: *${fmt(s.drop)}* (Kemarin: ${fmt(p.drop)} | Selisih: ${fDelta(dDrop)})`);
-      lines.push(`_(Pembanding: Data tanggal ${prevDateFormatted})_`);
+  const block = (label, rows) => {
+    const overdue = getOverdueRows(rows);
+    lines.push(`*Modul ${label} — ${fmt(overdue.length)} order overdue*`);
+    if (overdue.length === 0) {
+      lines.push(`- Tidak ada order overdue.`);
     } else {
-      lines.push(`- Total ${unit}: *${fmt(s.total)}*`);
-      lines.push(`- ${closedLabel}: *${fmt(s.golive)}* (${s.ach}%)`);
-      lines.push(`- In Progress (Open): *${fmt(s.open)}*`);
-      lines.push(`- Drop: *${fmt(s.drop)}*`);
-      lines.push(`_(Baseline pertama tersimpan untuk perbandingan besok)_`);
+      overdue.slice(0, MAX_LIST_PER_MODULE).forEach(r => {
+        lines.push(`- *${escapeMd(r.namaLop)}* | ${escapeMd(r.district)} | Komitmen ${r.targetGolive} | Telat ${r.daysLate} hari`);
+      });
+      if (overdue.length > MAX_LIST_PER_MODULE) {
+        lines.push(`- ... dan ${fmt(overdue.length - MAX_LIST_PER_MODULE)} order overdue lainnya.`);
+      }
     }
     lines.push(``);
   };
 
-  formatBlock('hem', 'HEM', 'order', hem, 'Golive / UT');
-  formatBlock('olo', 'OLO', 'order', olo, 'Golive / UT');
+  block('HEM', hemRows);
+  block('OLO', oloRows);
 
   return lines.join('\n');
 }
@@ -96,7 +79,6 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
   const [showConfig, setShowConfig] = useState(false);
   const [sendState, setSendState] = useState('idle');
   const [sendMsg, setSendMsg] = useState('');
-  const autoAttempted = useRef(false);
 
   const configured = Boolean(settings.botToken && settings.chatId);
   const ready = nodebRows.length > 0 || hemRows.length > 0 || oloRows.length > 0;
@@ -110,11 +92,7 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
     setSendState('sending');
     setSendMsg(isAuto ? 'Mengirim alert otomatis…' : 'Mengirim laporan…');
     try {
-      const text = buildSummaryText({
-        nodeb: summarizeNodeB(nodebRows),
-        hem: summarizeHemOlo(hemRows),
-        olo: summarizeHemOlo(oloRows),
-      });
+      const text = buildSummaryText({ hemRows, oloRows });
       await sendTelegramMessage({ botToken: settings.botToken, chatId: settings.chatId, text });
       setSendState('sent');
       setSendMsg(isAuto ? 'Alert otomatis terkirim ke Telegram.' : `Laporan terkirim (${new Date().toLocaleTimeString('id-ID')}).`);
@@ -125,11 +103,6 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
       return false;
     }
   }, [settings.botToken, settings.chatId, nodebRows, hemRows, oloRows]);
-
-  // Auto-send dinonaktifkan atas permintaan user
-  useEffect(() => {
-    // Tidak ada pengiriman otomatis
-  }, []);
 
   const handleSave = () => {
     saveTelegramSettings(settings);
@@ -144,10 +117,10 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
         <div className="flex items-center gap-2">
           <BellRing className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           <div>
-            <h3 className="text-slate-800 dark:text-slate-200 font-semibold text-sm">Alert Telegram — Ringkasan Harian</h3>
+            <h3 className="text-slate-800 dark:text-slate-200 font-semibold text-sm">Alert Telegram — Order Overdue</h3>
             <p className="text-[11px] text-slate-500">
               {configured
-                ? `Digest NODE B + HEM + OLO, otomatis 1x sehari ${settings.autoSend ? 'aktif' : 'nonaktif'}`
+                ? 'Hanya order open yang lewat Komitmen Golive (pengiriman manual)'
                 : 'Belum dikonfigurasi — klik ikon gerigi untuk isi Bot Token & Chat ID'}
             </p>
           </div>
