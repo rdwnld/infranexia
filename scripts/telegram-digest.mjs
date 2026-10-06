@@ -102,6 +102,7 @@ function hemStage(progressRaw) {
 function findOverdue(table, isOlo) {
   const iRegion = findCol(table.cols, 'REGION');
   const iProgress = findCol(table.cols, 'Progress Lapangan');
+  const iSubStatus = findCol(table.cols, 'Sub Status');
   const iKomitmen = findCol(table.cols, 'Komitmen Golive');
   const iTarget = findCol(table.cols, 'TARGET GOLIVE');
   const iDistrict = findCol(table.cols, 'DISTRICT');
@@ -112,12 +113,16 @@ function findOverdue(table, isOlo) {
   const out = [];
   for (const row of table.rows || []) {
     const prog = String(cellVal(row, iProgress, '')).trim();
+    const sub = String(cellVal(row, iSubStatus, '')).trim().toUpperCase();
+    const progUp = prog.toUpperCase();
     const komitmen = toISODate(cellVal(row, iKomitmen >= 0 ? iKomitmen : iTarget, ''));
     if (!prog || !komitmen || komitmen >= today) continue;
     const stage = hemStage(prog);
     if (stage === 'Golive / UT') continue;
     if (stage === 'Approved Drop' || stage === 'Proposed Drop') continue;
     if (String(cellVal(row, iStatus, '')).toUpperCase().includes('CLOSED')) continue;
+    if (progUp.includes('HOLD') || sub.includes('HOLD')) continue;
+    if (progUp.includes('BISA PT1') || sub.includes('BISA PT1')) continue;
     out.push({
       nama: String(cellVal(row, iNama, '')).trim() || '(tanpa nama)',
       region: normalizeRegion(cellVal(row, iRegion, '')) || 'Lainnya',

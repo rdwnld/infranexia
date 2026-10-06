@@ -23,13 +23,18 @@ function escapeMd(s) {
   return String(s ?? '').replace(/([*_`[])/g, '\\$1');
 }
 
-// Order open yang Komitmen Golive-nya sudah lewat hari ini (bukan Golive/Closed, bukan Drop)
+// Order open yang Komitmen Golive-nya sudah lewat hari ini
+// (bukan Golive/Closed, bukan Drop, bukan Hold, bukan Bisa PT1 — sama seperti tabel OPEN LOP)
 function getOverdueRows(rows = []) {
   const today = todayISO();
   return rows
     .filter(r => {
       if (!r || r.isClosed) return false;
       if ((r.stage || '').toUpperCase().includes('DROP')) return false;
+      const prog = (r.progressLapangan || '').toUpperCase();
+      const sub = (r.subStatus || '').toUpperCase();
+      if (prog.includes('HOLD') || sub.includes('HOLD')) return false;
+      if (prog.includes('BISA PT1') || sub.includes('BISA PT1')) return false;
       const t = r.targetGolive;
       if (!t || !/^\d{4}-\d{2}-\d{2}/.test(t)) return false;
       return t < today;
