@@ -39,7 +39,18 @@ bagian Blocker di bawah)
 - [x] Uji build proyek dan parser data live NODE B
 - [ ] Verifikasi ulang modul NODE B terhadap sheet baru (header baris 2, `headers=2`) — unpause
 
-## Fase 2 — Modul HEM & OLO
+## Fase 2.5 — Modul QE Relok
+
+- [x] Data Discovery & analisis kolom tab QE Relok (`gid=1937238989`)
+- [x] Implementasi `gvizClient.js` mapping `QE_RELOK`
+- [x] Implementasi `qerelok.parser.js`
+- [x] Implementasi `useQeRelokData` & `useQeRelokFilters`
+- [x] Panel: Profiling Order & KPI Strip QE Relok
+- [x] Panel: Status Progres Breakdown QE Relok
+- [x] Panel: Distribusi per District & Klasifikasi LOP
+- [x] Panel: Data Table lengkap dengan pencarian interaktif
+- [x] Integrasi halaman QE Relok ke sidebar navigasi (`RegionLayout.jsx`) & routing (`App.jsx`)
+- [x] Uji build proyek dan parser data live QE Relok
 
 - [x] Putuskan: modul HEM & OLO digabung jadi satu modul generik (re-use `HemPage` & `hem.parser.js` dengan prop `isOlo`)
 - [x] Implementasi `hem.stageRules.js` (klasifikasi 7 tahap + sub-tahap Persiapan — `skill.md` §2)

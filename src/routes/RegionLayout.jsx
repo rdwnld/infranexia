@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { NavLink, useParams, useNavigate, Outlet } from 'react-router-dom';
-import { RefreshCw, Radio, Layers, Network, MapPin, LayoutDashboard, Sun, Moon, Menu, X } from 'lucide-react';
+import { RefreshCw, Radio, Layers, Network, MapPin, LayoutDashboard, CheckSquare, Sun, Moon, Menu, X } from 'lucide-react';
 import { REGIONS, getRegionInfo } from '../regions/regionConfig';
 import { useTheme } from '../shared/theme/ThemeContext';
 
 const MODULES = [
   { key: 'hem', label: 'Modul HEM', icon: Layers, active: 'border-emerald-400 text-emerald-600 dark:text-emerald-300 bg-emerald-500/10' },
   { key: 'olo', label: 'Modul OLO', icon: MapPin, active: 'border-purple-400 text-purple-600 dark:text-purple-300 bg-purple-500/10' },
+  { key: 'qerelok', label: 'QE Relok', icon: CheckSquare, active: 'border-cyan-400 text-cyan-600 dark:text-cyan-300 bg-cyan-500/10' },
   { key: 'summary', label: 'Ringkasan', icon: LayoutDashboard, active: 'border-amber-400 text-amber-600 dark:text-amber-300 bg-amber-500/10' },
 ];
 
