@@ -3,7 +3,8 @@ const SPREADSHEET_ID = '1sQuMVrp-GAZu4TrUO5bn3Ul5fLELgNa_rIWDGAI-ujU';
 export const GID_MAP = {
   NODE_B: '636051156',
   HEM: '1129058778',
-  OLO: '1544967736'
+  OLO: '1544967736',
+  QE_RELOK: '1937238989'
 };
 
 /**
