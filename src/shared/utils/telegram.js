@@ -84,19 +84,32 @@ export function markAutoSentToday(scopeKey) {
   }
 }
 
-export async function sendTelegramMessage({ botToken, chatId, text }) {
+export async function sendTelegramMessage({ botToken, chatId, text, timeoutMs = 25000 }) {
   if (!botToken || !chatId) {
     throw new Error('Bot token / Chat ID belum diisi.');
   }
-  const res = await fetch(`https://api.telegram.org/bot${botToken.trim()}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId.trim(),
-      text,
-      parse_mode: 'Markdown',
-    }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let res;
+  try {
+    res = await fetch(`https://api.telegram.org/bot${botToken.trim()}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId.trim(),
+        text,
+        parse_mode: 'Markdown',
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err && err.name === 'AbortError') {
+      throw new Error('Koneksi ke Telegram timeout — coba klik Kirim lagi.');
+    }
+    throw new Error(`Gagal koneksi ke Telegram (${(err && err.message) || 'network error'}) — coba klik Kirim lagi.`);
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) {
     throw new Error(`Telegram HTTP ${res.status} — cek token & koneksi.`);
   }

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Send, Settings2, Loader2, CheckCircle2, AlertTriangle, BellRing } from 'lucide-react';
 import {
   loadTelegramSettings,
@@ -99,16 +99,19 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
   const [showConfig, setShowConfig] = useState(false);
   const [sendState, setSendState] = useState('idle');
   const [sendMsg, setSendMsg] = useState('');
+  const sendingRef = useRef(false);
 
   const configured = Boolean(settings.botToken && settings.chatId);
   const ready = nodebRows.length > 0 || hemRows.length > 0 || oloRows.length > 0;
 
   const doSend = useCallback(async (isAuto) => {
+    if (sendingRef.current) return false;
     if (!settings.botToken || !settings.chatId) {
       setSendState('error');
       setSendMsg('Isi Bot Token & Chat ID dulu (klik ikon gerigi).');
       return false;
     }
+    sendingRef.current = true;
     setSendState('sending');
     setSendMsg(isAuto ? 'Mengirim alert otomatis…' : 'Mengirim laporan…');
     try {
@@ -121,6 +124,8 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
       setSendState('error');
       setSendMsg(err.message || 'Gagal mengirim ke Telegram.');
       return false;
+    } finally {
+      sendingRef.current = false;
     }
   }, [settings.botToken, settings.chatId, nodebRows, hemRows, oloRows]);
 
@@ -175,11 +180,11 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
               ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-300'
               : 'bg-slate-200 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700/60 text-slate-500 dark:text-slate-400'
         }`}>
-          {sendState === 'sent'
-            ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+          {sendState === 'sending'
+            ? <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
             : sendState === 'error'
               ? <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-              : <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />}
+              : <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />}
           <span>{sendMsg}</span>
         </div>
       )}
