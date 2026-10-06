@@ -7,6 +7,7 @@ import { QeStatusDeploymentPanel } from './components/QeStatusDeploymentPanel';
 import { QeDistrictMatrixPanel } from './components/QeDistrictMatrixPanel';
 import { QeSubStatusPanel } from './components/QeSubStatusPanel';
 import { QeDataTablePanel } from './components/QeDataTablePanel';
+import { OpenLopMatrixPanel } from '../hem/components/OpenLopMatrixPanel';
 import { LoadingState } from '../../shared/components/LoadingState';
 import { ErrorState } from '../../shared/components/ErrorState';
 
@@ -17,6 +18,7 @@ export function QeRelokPage({ regional = 'all' }) {
     filteredRows,
     toggleSingleSelect,
     toggleMultiSelectItem,
+    setCellFilter,
     resetFilters,
     isFiltered,
   } = useQeRelokFilters(rows);
@@ -79,6 +81,15 @@ export function QeRelokPage({ regional = 'all' }) {
           onSelectDistrict={toggleSingleSelect}
         />
       </div>
+
+      {/* Reused Open LOP / Rekap per Region Matrix Panel */}
+      <OpenLopMatrixPanel
+        filteredRows={filteredRows}
+        activeProgress={state.singleSelect.progressLapangan}
+        activeSubStatus={state.singleSelect.subStatus}
+        activeRegion={state.singleSelect.selectedRegion}
+        onSelectCell={setCellFilter}
+      />
 
       {/* Grid 2: SubStatus / Klasifikasi Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">

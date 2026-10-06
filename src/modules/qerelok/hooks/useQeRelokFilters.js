@@ -9,6 +9,9 @@ const initialState = {
     batch: null,
     closedOnly: null,
     hasRealisasi: null,
+    progressLapangan: null,
+    subStatus: null,
+    selectedRegion: null,
   },
   multiSelect: {
     district: new Set(),
@@ -26,6 +29,25 @@ function filterReducer(state, action) {
         singleSelect: {
           ...state.singleSelect,
           [key]: current === value ? null : value,
+        }
+      };
+    }
+    case 'SET_CELL_FILTER': {
+      const { type, name, reg } = action.payload;
+      const progKey = type === 'progress' ? 'progressLapangan' : 'subStatus';
+      const otherKey = type === 'progress' ? 'subStatus' : 'progressLapangan';
+
+      const currentProg = state.singleSelect[progKey];
+      const currentReg = state.singleSelect.selectedRegion;
+      const isSame = currentProg === name && currentReg === reg;
+
+      return {
+        ...state,
+        singleSelect: {
+          ...state.singleSelect,
+          [progKey]: isSame ? null : name,
+          [otherKey]: null,
+          selectedRegion: isSame ? null : reg,
         }
       };
     }
@@ -80,6 +102,15 @@ export function useQeRelokFilters(rawRows = []) {
       if (state.singleSelect.hasRealisasi && !(row.nilaiRealisasi > 0)) {
         return false;
       }
+      if (state.singleSelect.progressLapangan && row.statusProgres !== state.singleSelect.progressLapangan) {
+        return false;
+      }
+      if (state.singleSelect.subStatus && row.detailStatus !== state.singleSelect.subStatus) {
+        return false;
+      }
+      if (state.singleSelect.selectedRegion && row.region !== state.singleSelect.selectedRegion) {
+        return false;
+      }
 
       if (state.multiSelect.district.size > 0 && !state.multiSelect.district.has(row.district)) {
         return false;
@@ -100,6 +131,10 @@ export function useQeRelokFilters(rawRows = []) {
     dispatch({ type: 'TOGGLE_MULTI_SELECT_ITEM', payload: { key, value } });
   }, []);
 
+  const setCellFilter = useCallback((type, name, reg) => {
+    dispatch({ type: 'SET_CELL_FILTER', payload: { type, name, reg } });
+  }, []);
+
   const resetFilters = useCallback(() => {
     dispatch({ type: 'RESET_FILTERS' });
   }, []);
@@ -115,6 +150,7 @@ export function useQeRelokFilters(rawRows = []) {
     filteredRows,
     toggleSingleSelect,
     toggleMultiSelectItem,
+    setCellFilter,
     resetFilters,
     isFiltered,
   };

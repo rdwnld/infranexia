@@ -14,10 +14,10 @@ export function OpenLopMatrixPanel({
     return filteredRows.filter(r => {
       if (!r) return false;
       const stage = (r.stage || '').toLowerCase();
-      const prog = (r.progressLapangan || '').toUpperCase();
-      const sub = (r.subStatus || '').toUpperCase();
-      const isDrop = stage.includes('drop');
-      const isGolive = r.isClosed;
+      const prog = (r.progressLapangan || r.statusProgres || '').toUpperCase();
+      const sub = (r.subStatus || r.detailStatus || '').toUpperCase();
+      const isDrop = stage.includes('drop') || prog.includes('DROP');
+      const isGolive = r.isClosed || prog.includes('CLOSED');
       const isHold = prog.includes('HOLD') || sub.includes('HOLD');
       const isBisaPt1 = prog.includes('BISA PT1') || sub.includes('BISA PT1');
 
@@ -31,7 +31,7 @@ export function OpenLopMatrixPanel({
     const regions = REGION_BADGES;
 
     openRows.forEach(r => {
-      const prog = r.progressLapangan || 'UNKNOWN';
+      const prog = r.progressLapangan || r.statusProgres || 'UNKNOWN';
       if (!map[prog]) {
         map[prog] = { name: prog, SBU: 0, SBT: 0, SBS: 0, total: 0 };
       }
@@ -56,7 +56,7 @@ export function OpenLopMatrixPanel({
     const regions = REGION_BADGES;
 
     openRows.forEach(r => {
-      const sub = r.subStatus || '-';
+      const sub = r.subStatus || r.detailStatus || '-';
       if (!map[sub]) {
         map[sub] = { name: sub, SBU: 0, SBT: 0, SBS: 0, total: 0 };
       }
