@@ -57,8 +57,14 @@ export function QeRelokPage({ regional = 'all' }) {
         </div>
       )}
 
-      {/* Profiling / KPI Strip */}
-      <QeProfilingOrderPanel filteredRows={filteredRows} />
+      {/* Profiling / KPI Strip (card bisa diklik untuk filter) */}
+      <QeProfilingOrderPanel
+        filteredRows={filteredRows}
+        activeClosedOnly={state.singleSelect.closedOnly === true}
+        activeHasRealisasi={state.singleSelect.hasRealisasi === true}
+        onToggleFilter={toggleSingleSelect}
+        onResetFilters={resetFilters}
+      />
 
       {/* Grid 1: Status Deployment & District Matrix */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, CheckCircle2, Clock, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Layers, CheckCircle2, DollarSign, TrendingUp } from 'lucide-react';
 
 function formatRupiah(num) {
   if (!num) return 'Rp 0';
@@ -8,7 +8,13 @@ function formatRupiah(num) {
   return `Rp ${num.toLocaleString('id-ID')}`;
 }
 
-export function QeProfilingOrderPanel({ filteredRows = [] }) {
+export function QeProfilingOrderPanel({
+  filteredRows = [],
+  activeClosedOnly = false,
+  activeHasRealisasi = false,
+  onToggleFilter,
+  onResetFilters,
+}) {
   const totalLop = filteredRows.length;
   const closedCount = filteredRows.filter(r => r.isClosed).length;
   const openCount = totalLop - closedCount;
@@ -24,6 +30,9 @@ export function QeProfilingOrderPanel({ filteredRows = [] }) {
       sub: `${closedCount} Closed · ${openCount} Open`,
       icon: Layers,
       color: 'text-sky-500 bg-sky-500/10 border-sky-500/20',
+      onClick: onResetFilters,
+      title: 'Klik untuk tampilkan semua (reset filter)',
+      active: false,
     },
     {
       label: 'Ach Closed',
@@ -31,6 +40,9 @@ export function QeProfilingOrderPanel({ filteredRows = [] }) {
       sub: `${closedCount} dari ${totalLop} LOP selesai`,
       icon: CheckCircle2,
       color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+      onClick: onToggleFilter ? () => onToggleFilter('closedOnly', true) : undefined,
+      title: activeClosedOnly ? 'Klik untuk lepas filter Closed' : 'Klik untuk tampilkan hanya LOP Closed',
+      active: activeClosedOnly,
     },
     {
       label: 'Total Nilai Plan',
@@ -45,6 +57,9 @@ export function QeProfilingOrderPanel({ filteredRows = [] }) {
       sub: 'Realisasi Pekerjaan',
       icon: TrendingUp,
       color: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
+      onClick: onToggleFilter ? () => onToggleFilter('hasRealisasi', true) : undefined,
+      title: activeHasRealisasi ? 'Klik untuk lepas filter Realisasi' : 'Klik untuk tampilkan hanya LOP yang sudah ada realisasi',
+      active: activeHasRealisasi,
     },
   ];
 
@@ -52,10 +67,15 @@ export function QeProfilingOrderPanel({ filteredRows = [] }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {kpis.map((kpi, idx) => {
         const Icon = kpi.icon;
+        const clickable = typeof kpi.onClick === 'function';
         return (
           <div
             key={idx}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:shadow transition-all flex items-start justify-between gap-3"
+            onClick={kpi.onClick}
+            title={kpi.title}
+            className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm transition-all flex items-start justify-between gap-3 ${
+              clickable ? 'cursor-pointer hover:shadow-md' : ''
+            } ${kpi.active ? 'ring-2 ring-sky-500/70 border-sky-500/60' : ''}`}
           >
             <div>
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{kpi.label}</p>

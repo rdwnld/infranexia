@@ -7,6 +7,8 @@ const initialState = {
     klasifikasiLop: null,
     subconTa: null,
     batch: null,
+    closedOnly: null,
+    hasRealisasi: null,
   },
   multiSelect: {
     district: new Set(),
@@ -70,6 +72,12 @@ export function useQeRelokFilters(rawRows = []) {
         return false;
       }
       if (state.singleSelect.batch && row.batch !== state.singleSelect.batch) {
+        return false;
+      }
+      if (state.singleSelect.closedOnly && !row.isClosed) {
+        return false;
+      }
+      if (state.singleSelect.hasRealisasi && !(row.nilaiRealisasi > 0)) {
         return false;
       }
 
