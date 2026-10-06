@@ -113,7 +113,7 @@ export function OpenLopMatrixPanel({
           </span>
         </div>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-          💡 Klik pada angka (SBU, SBT, SBS, Total) di tabel untuk memfilter data sesuai region & progress
+          Klik pada angka (SBU, SBT, SBS, Total) di tabel untuk memfilter data sesuai region & progress
         </p>
 
         <div className="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-lg max-h-[380px]">
@@ -226,7 +226,7 @@ export function OpenLopMatrixPanel({
           </span>
         </div>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-          💡 Klik pada angka (SBU, SBT, SBS, Total) di tabel untuk memfilter data sesuai region & sub status
+          Klik pada angka (SBU, SBT, SBS, Total) di tabel untuk memfilter data sesuai region & sub status
         </p>
 
         <div className="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-lg max-h-[380px]">
