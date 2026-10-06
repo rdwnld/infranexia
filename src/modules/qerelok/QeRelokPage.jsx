@@ -82,17 +82,16 @@ export function QeRelokPage({ regional = 'all' }) {
         />
       </div>
 
-      {/* Reused Open LOP / Rekap per Region Matrix Panel */}
-      <OpenLopMatrixPanel
-        filteredRows={filteredRows}
-        activeProgress={state.singleSelect.progressLapangan}
-        activeSubStatus={state.singleSelect.subStatus}
-        activeRegion={state.singleSelect.selectedRegion}
-        onSelectCell={setCellFilter}
-      />
-
-      {/* Grid 2: SubStatus / Klasifikasi Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+      {/* Reused Open LOP / Rekap per Region Matrix Panel & Klasifikasi LOP Panel side-by-side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <OpenLopMatrixPanel
+          filteredRows={filteredRows}
+          activeProgress={state.singleSelect.progressLapangan}
+          activeSubStatus={state.singleSelect.subStatus}
+          activeRegion={state.singleSelect.selectedRegion}
+          onSelectCell={setCellFilter}
+          hideSubStatusTable={true}
+        />
         <QeSubStatusPanel
           filteredRows={filteredRows}
           activeKlasifikasi={state.singleSelect.klasifikasiLop}
