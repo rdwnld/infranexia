@@ -156,7 +156,8 @@ function buildMessage(hemOverdue, oloOverdue) {
     if (rest.length > 0) byRegion.push({ region: 'Lainnya', rows: rest });
     let shown = 0;
     for (const g of byRegion) {
-      lines.push(`Regional ${g.region} (${fmt(g.rows.length)}):`);
+      lines.push(``);
+      lines.push(`*━━ Regional ${g.region} (${fmt(g.rows.length)} ━━*`);
       for (const r of g.rows) {
         if (shown >= MAX_LIST_PER_MODULE) break;
         lines.push(`- *${escapeMd(r.nama)}* | ${escapeMd(r.district)} | Komitmen ${r.komitmen} | Telat ${r.daysLate} hari`);
