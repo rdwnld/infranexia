@@ -5,6 +5,7 @@ import {
   saveTelegramSettings,
   sendTelegramMessage,
 } from '../shared/utils/telegram';
+import { REGION_BADGES } from '../regions/regionConfig';
 
 const MAX_LIST_PER_MODULE = 20;
 
@@ -53,13 +54,26 @@ function buildSummaryText({ hemRows = [], oloRows = [] }) {
     lines.push(`*Modul ${label} — ${fmt(overdue.length)} order overdue*`);
     if (overdue.length === 0) {
       lines.push(`- Tidak ada order overdue.`);
-    } else {
-      overdue.slice(0, MAX_LIST_PER_MODULE).forEach(r => {
+      lines.push(``);
+      return;
+    }
+    const byRegion = REGION_BADGES
+      .map(region => ({ region, rows: overdue.filter(r => r.region === region) }))
+      .filter(g => g.rows.length > 0);
+    const rest = overdue.filter(r => !REGION_BADGES.includes(r.region));
+    if (rest.length > 0) byRegion.push({ region: 'Lainnya', rows: rest });
+    let shown = 0;
+    for (const g of byRegion) {
+      lines.push(`Regional ${g.region} (${fmt(g.rows.length)}):`);
+      for (const r of g.rows) {
+        if (shown >= MAX_LIST_PER_MODULE) break;
         lines.push(`- *${escapeMd(r.namaLop)}* | ${escapeMd(r.district)} | Komitmen ${r.targetGolive} | Telat ${r.daysLate} hari`);
-      });
-      if (overdue.length > MAX_LIST_PER_MODULE) {
-        lines.push(`- ... dan ${fmt(overdue.length - MAX_LIST_PER_MODULE)} order overdue lainnya.`);
+        shown++;
       }
+      if (shown >= MAX_LIST_PER_MODULE) break;
+    }
+    if (overdue.length > shown) {
+      lines.push(`- ... dan ${fmt(overdue.length - shown)} order overdue lainnya.`);
     }
     lines.push(``);
   };

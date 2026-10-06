@@ -75,6 +75,15 @@ async function loadSheet(gid, headers) {
   return payload.table;
 }
 
+function normalizeRegion(raw) {
+  const s = String(raw || '').trim().toUpperCase();
+  if (!s) return '';
+  if (s === 'SBU' || s.includes('SUMBAGUT')) return 'SBU';
+  if (s === 'SBT' || s.includes('SUMBAGTENG')) return 'SBT';
+  if (s === 'SBS' || s.includes('SUMBAGSEL')) return 'SBS';
+  return s;
+}
+
 function hemStage(progressRaw) {
   const str = String(progressRaw || '').trim().toUpperCase();
   if (!str) return 'UNKNOWN';
@@ -91,6 +100,7 @@ function hemStage(progressRaw) {
 
 // Kembalikan daftar order overdue: Komitmen Golive < hari ini, belum Golive/Closed, bukan Drop
 function findOverdue(table, isOlo) {
+  const iRegion = findCol(table.cols, 'REGION');
   const iProgress = findCol(table.cols, 'Progress Lapangan');
   const iKomitmen = findCol(table.cols, 'Komitmen Golive');
   const iTarget = findCol(table.cols, 'TARGET GOLIVE');
@@ -110,6 +120,7 @@ function findOverdue(table, isOlo) {
     if (String(cellVal(row, iStatus, '')).toUpperCase().includes('CLOSED')) continue;
     out.push({
       nama: String(cellVal(row, iNama, '')).trim() || '(tanpa nama)',
+      region: normalizeRegion(cellVal(row, iRegion, '')) || 'Lainnya',
       district: String(cellVal(row, iDistrict, '')).trim().toUpperCase() || '-',
       komitmen,
       daysLate: Math.round((Date.parse(today) - Date.parse(komitmen)) / 86400000),
@@ -135,13 +146,26 @@ function buildMessage(hemOverdue, oloOverdue) {
     lines.push(`*Modul ${label} — ${fmt(list.length)} order overdue*`);
     if (list.length === 0) {
       lines.push(`- Tidak ada order overdue.`);
-    } else {
-      list.slice(0, MAX_LIST_PER_MODULE).forEach(r => {
+      lines.push(``);
+      return;
+    }
+    const byRegion = ['SBU', 'SBT', 'SBS']
+      .map(region => ({ region, rows: list.filter(r => r.region === region) }))
+      .filter(g => g.rows.length > 0);
+    const rest = list.filter(r => !['SBU', 'SBT', 'SBS'].includes(r.region));
+    if (rest.length > 0) byRegion.push({ region: 'Lainnya', rows: rest });
+    let shown = 0;
+    for (const g of byRegion) {
+      lines.push(`Regional ${g.region} (${fmt(g.rows.length)}):`);
+      for (const r of g.rows) {
+        if (shown >= MAX_LIST_PER_MODULE) break;
         lines.push(`- *${escapeMd(r.nama)}* | ${escapeMd(r.district)} | Komitmen ${r.komitmen} | Telat ${r.daysLate} hari`);
-      });
-      if (list.length > MAX_LIST_PER_MODULE) {
-        lines.push(`- ... dan ${fmt(list.length - MAX_LIST_PER_MODULE)} order overdue lainnya.`);
+        shown++;
       }
+      if (shown >= MAX_LIST_PER_MODULE) break;
+    }
+    if (list.length > shown) {
+      lines.push(`- ... dan ${fmt(list.length - shown)} order overdue lainnya.`);
     }
     lines.push(``);
   };
