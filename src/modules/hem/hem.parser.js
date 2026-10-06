@@ -101,6 +101,7 @@ export function parseHemRows(table, isOlo = false) {
   const iRealGolive = colIndex(cols, 'Tanggal Golive Real', isOlo ? 23 : 32);
   const iPriorityRso = colIndex(cols, 'PRIORITY BY RSO', 64);
   const iPrioritas = colIndex(cols, 'PRIORITAS', 68);
+  const iProgram = colIndex(cols, 'PROGRAM', -1);
 
   const parsed = [];
 
@@ -126,7 +127,12 @@ export function parseHemRows(table, isOlo = false) {
 
     const valRso = String(getCellValue(row, iPriorityRso, '')).trim();
     const valPrio = String(getCellValue(row, iPrioritas, '')).trim();
-    const priorityByRSO = (valPrio && valPrio !== '-' ? valPrio : (valRso && valRso !== '-' ? valRso : '-'));
+    const valProgram = String(getCellValue(row, iProgram, '')).trim();
+    const pick = (v) => (v && v !== '-' ? v : '');
+    // OLO: pakai kolom PROGRAM (BI); HEM: pakai PRIORITAS / PRIORITY BY RSO
+    const priorityByRSO = isOlo
+      ? (pick(valProgram) || pick(valPrio) || pick(valRso) || '-')
+      : (pick(valPrio) || pick(valRso) || '-');
 
     parsed.push({
       id: `${isOlo ? 'olo' : 'hem'}-${r}-${noOrder || r}`,

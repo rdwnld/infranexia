@@ -10,6 +10,7 @@ export function FilterChecklist({
   onResetFilters,
   isFiltered,
   statusOptions = [],
+  priorityLabel = 'PRIORITY BY RSO',
 }) {
   const districts = useMemo(() => {
     const counts = {};
@@ -29,14 +30,9 @@ export function FilterChecklist({
         counts[val] = (counts[val] || 0) + 1;
       }
     });
-    const list = Object.entries(counts)
+    return Object.entries(counts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
-
-    if (list.length === 0) {
-      list.push({ name: 'PRIORITAS', count: 51 });
-    }
-    return list;
   }, [allRows]);
 
   const commitmentOptions = useMemo(() => {
@@ -96,7 +92,7 @@ export function FilterChecklist({
 
         {/* Priority by RSO Dropdown */}
         <FilterDropdown
-          label="PRIORITY BY RSO"
+          label={priorityLabel}
           items={priorityOptions}
           selectedSet={multiSelect.priorityByRSO || new Set()}
           onToggleItem={(name) => onToggleItem('priorityByRSO', name)}

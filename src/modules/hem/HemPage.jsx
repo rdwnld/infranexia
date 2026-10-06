@@ -116,6 +116,7 @@ export function HemPage({ regional = 'ALL', isOlo = false }) {
         onResetFilters={resetFilters}
         isFiltered={isFiltered}
         statusOptions={statusOptions}
+        priorityLabel={isOlo ? 'PRIORITY BY SS' : 'PRIORITY BY RSO'}
       />
 
       {/* OPEN LOP & DETAIL STATUS OPEN LOP Matrix */}
