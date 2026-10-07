@@ -48,7 +48,7 @@ export function OpenLopMatrixPanel({
         const n = row.name.toUpperCase();
         return !n.includes('BISA PT1') && !n.includes('HOLD');
       })
-      .sort((a, b) => b.total - a.total);
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [openRows]);
 
   // Tabel 2: Sub Status x Region (Termasuk Rekon, kecuali BISA PT1 & HOLD)
