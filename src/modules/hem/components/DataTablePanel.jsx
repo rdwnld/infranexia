@@ -260,12 +260,13 @@ export function DataTablePanel({ filteredRows = [], moduleTitle = 'HEM' }) {
               <th className="p-3">Komitmen Golive</th>
               <th className="p-3">Tanggal Submit</th>
               <th className="p-3">Jenis Kabel</th>
+              <th className="p-3 text-right">Panjang Kabel (m)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {paginatedRows.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-8 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400">
                   <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
                   Tidak ada data yang ditemukan.
                 </td>
@@ -293,6 +294,7 @@ export function DataTablePanel({ filteredRows = [], moduleTitle = 'HEM' }) {
                     <td className="p-3 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{r.targetGolive || '-'}</td>
                     <td className="p-3 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{r.tglOrder || '-'}</td>
                     <td className="p-3 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{r.jenisKabel || '-'}</td>
+                    <td className="p-3 text-right font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{r.panjangKabel ? r.panjangKabel.toLocaleString('id-ID') : '-'}</td>
                   </tr>
                 );
               })

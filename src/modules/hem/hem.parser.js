@@ -2,6 +2,13 @@ import { colIndex, getCellValue } from '../../shared/data/columnLookup';
 import { normalizeRegionCode } from '../../regions/regionConfig';
 import { getStage, getSubStagePersiapan, STAGES } from './hem.stageRules';
 
+function parseNumber(val) {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') return val;
+  const num = parseFloat(String(val).replace(/[^0-9.-]+/g, ''));
+  return isNaN(num) ? 0 : num;
+}
+
 /**
  * Clean district string
  */
@@ -98,6 +105,7 @@ export function parseHemRows(table, isOlo = false) {
     ? colIndex(cols, 'Komitmen Golive', -1)
     : colIndex(cols, 'TARGET GOLIVE', isOlo ? 22 : 22);
   const iJenisKabel = colIndex(cols, 'Jenis Kabel', isOlo ? 35 : 54);
+  const iPanjangKabel = colIndex(cols, 'Panjang Kabel (m)', isOlo ? 47 : 53);
   const iRealGolive = colIndex(cols, 'Tanggal Golive Real', isOlo ? 23 : 32);
   const iPriorityRso = colIndex(cols, 'PRIORITY BY RSO', 64);
   const iPrioritas = colIndex(cols, 'PRIORITAS', 68);
@@ -157,6 +165,7 @@ export function parseHemRows(table, isOlo = false) {
       targetGolive: parseSheetDateISO(getCellValue(row, iTargetGolive, '')),
       realisasiGolive: parseSheetDateISO(getCellValue(row, iRealGolive, '')),
       jenisKabel: String(getCellValue(row, iJenisKabel, '-')).trim() || '-',
+      panjangKabel: parseNumber(getCellValue(row, iPanjangKabel, 0)),
       priorityByRSO,
     });
   }
