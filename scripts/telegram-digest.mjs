@@ -198,6 +198,7 @@ function findPersiapan(table, isOlo) {
     if (stage !== 'Persiapan') continue;
     if (String(cellVal(row, iStatus, '')).toUpperCase().includes('CLOSED')) continue;
     if (progUp.includes('HOLD') || sub.includes('HOLD')) continue;
+    if (progUp.includes('03 PERIZINAN') || progUp.includes('PERIZINAN') || progUp.includes('04 MATDEL') || progUp.includes('MATDEL')) continue;
     out.push({
       nama: String(cellVal(row, iNama, '')).trim() || '(tanpa nama)',
       region: normalizeRegion(cellVal(row, iRegion, '')) || 'Lainnya',

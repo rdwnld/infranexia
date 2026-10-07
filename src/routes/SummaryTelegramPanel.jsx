@@ -98,6 +98,7 @@ function getPersiapanRows(rows = []) {
       const prog = (r.progressLapangan || '').toUpperCase();
       const sub = (r.subStatus || '').toUpperCase();
       if (prog.includes('HOLD') || sub.includes('HOLD') || r.subStagePersiapan === 'Hold') return false;
+      if (r.subStagePersiapan === 'Perizinan' || r.subStagePersiapan === 'Matdel') return false;
       return true;
     })
     .sort((a, b) => (a.district || '').localeCompare(b.district) || (a.namaLop || '').localeCompare(b.namaLop));
