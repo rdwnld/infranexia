@@ -90,6 +90,80 @@ function buildSummaryText({ hemRows = [], oloRows = [] }) {
   return lines.join('\n');
 }
 
+function getPersiapanRows(rows = []) {
+  return rows
+    .filter(r => {
+      if (!r || r.isClosed) return false;
+      if (r.stage !== 'Persiapan') return false;
+      const prog = (r.progressLapangan || '').toUpperCase();
+      const sub = (r.subStatus || '').toUpperCase();
+      if (prog.includes('HOLD') || sub.includes('HOLD') || r.subStagePersiapan === 'Hold') return false;
+      return true;
+    })
+    .sort((a, b) => (a.district || '').localeCompare(b.district) || (a.namaLop || '').localeCompare(b.namaLop));
+}
+
+function buildModulePersiapanChunks(label, rows) {
+  const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  const persiapan = getPersiapanRows(rows);
+
+  if (persiapan.length === 0) {
+    return [
+      `*INFRANEXIA — Reminder Order Persiapan & Aanwijzing (${label})*` +
+      `\nTanggal: ${dateStr}\n\n*Modul ${label} — 0 order*\n- Tidak ada order Persiapan/Aanwijzing.`
+    ];
+  }
+
+  const byRegion = REGION_BADGES
+    .map(region => ({ region, rows: persiapan.filter(r => r.region === region) }))
+    .filter(g => g.rows.length > 0);
+  const rest = persiapan.filter(r => !REGION_BADGES.includes(r.region));
+  if (rest.length > 0) byRegion.push({ region: 'Lainnya', rows: rest });
+
+  const chunks = [];
+  let currentLines = [
+    `*INFRANEXIA — Reminder Order Persiapan & Aanwijzing (${label})*`,
+    `Tanggal: ${dateStr}`,
+    ``,
+    `*Modul ${label} — ${fmt(persiapan.length)} order*`,
+  ];
+
+  for (const g of byRegion) {
+    const regionHeader = `*━━ Regional ${g.region} (${fmt(g.rows.length)} ━━*`;
+    const districts = [...new Set(g.rows.map(r => r.district || 'UNKNOWN'))].sort();
+
+    const regionLines = [``, regionHeader];
+    for (const dist of districts) {
+      const distRows = g.rows.filter(r => (r.district || 'UNKNOWN') === dist);
+      if (distRows.length === 0) continue;
+      regionLines.push(``);
+      regionLines.push(`${escapeMd(dist)}`);
+      distRows.forEach((r, idx) => {
+        regionLines.push(`${idx + 1}. ${escapeMd(r.namaLop)}`);
+      });
+    }
+
+    const testChunk = [...currentLines, ...regionLines].join('\n');
+    if (testChunk.length > 3800 && currentLines.length > 4) {
+      chunks.push(currentLines.join('\n'));
+      currentLines = [
+        `*INFRANEXIA — Reminder Order Persiapan & Aanwijzing (${label}) (Lanjutan)*`,
+        `Tanggal: ${dateStr}`,
+        ``,
+        ...regionLines
+      ];
+    } else {
+      currentLines.push(...regionLines);
+    }
+  }
+
+  if (currentLines.length > 0) {
+    chunks.push(currentLines.join('\n'));
+  }
+
+  return chunks;
+}
+
 /**
  * Satu-satunya panel alert Telegram (opsi A): digest gabungan 3 modul
  * dari halaman Ringkasan — auto 1x sehari + tombol manual.
@@ -115,10 +189,21 @@ export function SummaryTelegramPanel({ nodebRows = [], hemRows = [], oloRows = [
     setSendState('sending');
     setSendMsg(isAuto ? 'Mengirim alert otomatis…' : 'Mengirim laporan…');
     try {
-      const text = buildSummaryText({ hemRows, oloRows });
-      await sendTelegramMessage({ botToken: settings.botToken, chatId: settings.chatId, text });
+      const text1 = buildSummaryText({ hemRows, oloRows });
+      await sendTelegramMessage({ botToken: settings.botToken, chatId: settings.chatId, text: text1 });
+
+      const hemChunks = buildModulePersiapanChunks('HEM', hemRows);
+      for (const chunk of hemChunks) {
+        await sendTelegramMessage({ botToken: settings.botToken, chatId: settings.chatId, text: chunk });
+      }
+
+      const oloChunks = buildModulePersiapanChunks('OLO', oloRows);
+      for (const chunk of oloChunks) {
+        await sendTelegramMessage({ botToken: settings.botToken, chatId: settings.chatId, text: chunk });
+      }
+
       setSendState('sent');
-      setSendMsg(isAuto ? 'Alert otomatis terkirim ke Telegram.' : `Laporan terkirim (${new Date().toLocaleTimeString('id-ID')}).`);
+      setSendMsg(isAuto ? 'Alert otomatis terkirim ke Telegram.' : `Laporan lengkap terkirim (${new Date().toLocaleTimeString('id-ID')}).`);
       return true;
     } catch (err) {
       setSendState('error');

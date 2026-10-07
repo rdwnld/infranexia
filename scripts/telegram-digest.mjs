@@ -181,6 +181,95 @@ function buildMessage(hemOverdue, oloOverdue) {
   return lines.join('\n');
 }
 
+function findPersiapan(table, isOlo) {
+  const iRegion = findCol(table.cols, 'REGION');
+  const iProgress = findCol(table.cols, 'Progress Lapangan');
+  const iSubStatus = findCol(table.cols, 'Sub Status');
+  const iDistrict = findCol(table.cols, 'DISTRICT');
+  const iNama = findCol(table.cols, isOlo ? 'NAMA PROYEK' : 'NAMA LOP');
+  const iStatus = findCol(table.cols, isOlo ? 'Status Order' : 'Status');
+
+  const out = [];
+  for (const row of table.rows || []) {
+    const prog = String(cellVal(row, iProgress, '')).trim();
+    const sub = String(cellVal(row, iSubStatus, '')).trim().toUpperCase();
+    const progUp = prog.toUpperCase();
+    const stage = hemStage(prog);
+    if (stage !== 'Persiapan') continue;
+    if (String(cellVal(row, iStatus, '')).toUpperCase().includes('CLOSED')) continue;
+    if (progUp.includes('HOLD') || sub.includes('HOLD')) continue;
+    out.push({
+      nama: String(cellVal(row, iNama, '')).trim() || '(tanpa nama)',
+      region: normalizeRegion(cellVal(row, iRegion, '')) || 'Lainnya',
+      district: String(cellVal(row, iDistrict, '')).trim().toUpperCase() || '-',
+    });
+  }
+  out.sort((a, b) => a.district.localeCompare(b.district) || a.nama.localeCompare(b.nama));
+  return out;
+}
+
+function buildPersiapanChunks(label, list) {
+  const dateStr = new Date().toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric',
+  });
+  if (list.length === 0) {
+    return [
+      `*INFRANEXIA — Reminder Order Persiapan & Aanwijzing (${label})*` +
+      `\nTanggal: ${dateStr}\n\n*Modul ${label} — 0 order*\n- Tidak ada order Persiapan/Aanwijzing.`
+    ];
+  }
+
+  const regions = ['SBU', 'SBT', 'SBS'];
+  const restRegions = [...new Set(list.map(r => r.region))].filter(reg => !regions.includes(reg));
+  const allRegions = [...regions, ...restRegions];
+
+  const chunks = [];
+  let currentLines = [
+    `*INFRANEXIA — Reminder Order Persiapan & Aanwijzing (${label})*`,
+    `Tanggal: ${dateStr}`,
+    ``,
+    `*Modul ${label} — ${fmt(list.length)} order*`,
+  ];
+
+  for (const reg of allRegions) {
+    const regRows = list.filter(r => r.region === reg);
+    if (regRows.length === 0) continue;
+
+    const regionHeader = `*━━ Regional ${reg} (${fmt(regRows.length)} ━━*`;
+    const districts = [...new Set(regRows.map(r => r.district))].sort();
+
+    const regionLines = [``, regionHeader];
+    for (const dist of districts) {
+      const distRows = regRows.filter(r => r.district === dist);
+      if (distRows.length === 0) continue;
+      regionLines.push(``);
+      regionLines.push(`${dist}`);
+      distRows.forEach((r, idx) => {
+        regionLines.push(`${idx + 1}. ${escapeMd(r.nama)}`);
+      });
+    }
+
+    const testChunk = [...currentLines, ...regionLines].join('\n');
+    if (testChunk.length > 3800 && currentLines.length > 4) {
+      chunks.push(currentLines.join('\n'));
+      currentLines = [
+        `*INFRANEXIA — Reminder Order Persiapan & Aanwijzing (${label}) (Lanjutan)*`,
+        `Tanggal: ${dateStr}`,
+        ``,
+        ...regionLines
+      ];
+    } else {
+      currentLines.push(...regionLines);
+    }
+  }
+
+  if (currentLines.length > 0) {
+    chunks.push(currentLines.join('\n'));
+  }
+
+  return chunks;
+}
+
 async function main() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -206,7 +295,35 @@ async function main() {
   if (!res.ok || !json.ok) {
     throw new Error(`Telegram gagal: ${json.description || `HTTP ${res.status}`}`);
   }
-  console.log(`Alert overdue terkirim: HEM ${hemOverdue.length}, OLO ${oloOverdue.length}.`);
+
+  const hemPersiapan = findPersiapan(hemTable, false);
+  const oloPersiapan = findPersiapan(oloTable, true);
+
+  for (const chunk of buildPersiapanChunks('HEM', hemPersiapan)) {
+    const res2 = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: chunk, parse_mode: 'Markdown' }),
+    });
+    const json2 = await res2.json().catch(() => ({}));
+    if (!res2.ok || !json2.ok) {
+      throw new Error(`Telegram gagal (Persiapan HEM): ${json2.description || `HTTP ${res2.status}`}`);
+    }
+  }
+
+  for (const chunk of buildPersiapanChunks('OLO', oloPersiapan)) {
+    const res2 = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: chunk, parse_mode: 'Markdown' }),
+    });
+    const json2 = await res2.json().catch(() => ({}));
+    if (!res2.ok || !json2.ok) {
+      throw new Error(`Telegram gagal (Persiapan OLO): ${json2.description || `HTTP ${res2.status}`}`);
+    }
+  }
+
+  console.log(`Alert overdue & Persiapan terkirim.`);
 }
 
 main().catch(err => {
