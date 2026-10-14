@@ -1,10 +1,9 @@
 name: telegram-overdue-0800
 
 on:
-  # Alert overdue otomatis tiap jam 08.00 WIB setiap hari.
-  # Cron GitHub memakai UTC; WIB = UTC+7, jadi 08.00 WIB = 01.00 UTC.
-  schedule:
-    - cron: '0 1 * * *'
+  # Dipicu oleh scheduler eksternal (cron-job.org) tepat jam 08.00 WIB setiap hari
+  # via API workflow_dispatch. Blok schedule bawaan GitHub sengaja dihapus
+  # karena antreannya telat berjam-jam (terbukti 3 hari berturut-turut).
   workflow_dispatch: # tombol "Run workflow" manual untuk tes
 
 jobs:
