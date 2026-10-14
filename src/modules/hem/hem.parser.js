@@ -91,6 +91,7 @@ export function parseHemRows(table, isOlo = false) {
   const iSto = colIndex(cols, 'STO', isOlo ? 10 : 2);
   const iNamaLop = colIndex(cols, isOlo ? 'NAMA PROYEK' : 'NAMA LOP', isOlo ? 6 : 4);
   const iBatchOrder = colIndex(cols, 'BATCH ORDER', isOlo ? 3 : 9);
+  const iAltBatchOrder = colIndex(cols, 'NDE WORK ORDER KE TA', 15);
   const iBoq = colIndex(cols, 'BOQ', isOlo ? 12 : 13);
   const iMitra = colIndex(cols, 'Mitra', isOlo ? 15 : 16);
   const iSubkon = colIndex(cols, 'Subkon', isOlo ? 16 : 17);
@@ -149,7 +150,19 @@ export function parseHemRows(table, isOlo = false) {
       district,
       sto: String(getCellValue(row, iSto, '')).trim().toUpperCase(),
       namaLop: namaLop || `Order ${r}`,
-      batchOrder: String(getCellValue(row, iBatchOrder, 'Tanpa Batch')).trim() || 'Tanpa Batch',
+      batchOrder: (() => {
+        let b = String(getCellValue(row, iBatchOrder, '')).trim();
+        if (b && b !== 'Tanpa Batch' && b !== 'N/A' && b !== '-') return b;
+
+        const altB = String(getCellValue(row, iAltBatchOrder, '')).trim();
+        // Regex untuk menangkap pola "MoM Order DDMMYYYY" dan mengubahnya ke "MoM YYYYMMDD"
+        const momMatch = altB.match(/MoM\s?Order\s?(\d{2})(\d{2})(\d{4})/i);
+        if (momMatch) {
+          // momMatch[1]=DD, momMatch[2]=MM, momMatch[3]=YYYY
+          return `MoM${momMatch[3]}${momMatch[2]}${momMatch[1]}`;
+        }
+        return 'Tanpa Batch';
+      })(),
       boq: Number(getCellValue(row, iBoq, 0)) || 0,
       mitra: String(getCellValue(row, iMitra, '-')).trim() || '-',
       subkon: String(getCellValue(row, iSubkon, '-')).trim() || '-',

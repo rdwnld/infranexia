@@ -24,7 +24,14 @@ export function AgingOrderTablePanel({
       return isNaN(n) ? 999999 : n;
     };
 
-    const batches = Array.from(batchSet).sort((a, b) => cleanBatchNum(a) - cleanBatchNum(b));
+    const batches = Array.from(batchSet).sort((a, b) => {
+      const isMoMA = String(a).startsWith('MoM');
+      const isMoMB = String(b).startsWith('MoM');
+      if (isMoMA && isMoMB) return a.localeCompare(b);
+      if (isMoMA) return 1;
+      if (isMoMB) return -1;
+      return cleanBatchNum(a) - cleanBatchNum(b);
+    });
     const progressRows = Array.from(progSet).sort();
 
     const map = {};
