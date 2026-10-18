@@ -1,16 +1,17 @@
 import React, { useMemo } from 'react';
-import { Filter, RotateCcw, Calendar, MapPin, Layers } from 'lucide-react';
+import { Filter, RotateCcw, Calendar, MapPin, Layers, Crown } from 'lucide-react';
 import { FilterDropdown } from './FilterDropdown';
 
 export function FilterChecklist({
   allRows = [],
-  multiSelect = { district: new Set(), stage: new Set(), priorityByRSO: new Set(), commitmentPeriod: new Set() },
+  multiSelect = { district: new Set(), stage: new Set(), priorityByRSO: new Set(), prioritasCeo: new Set(), commitmentPeriod: new Set() },
   singleSelect = {},
   onToggleItem,
   onResetFilters,
   isFiltered,
   statusOptions = [],
   priorityLabel = 'PRIORITY BY RSO',
+  showPrioritasCeo = false,
 }) {
   const districts = useMemo(() => {
     const counts = {};
@@ -27,6 +28,19 @@ export function FilterChecklist({
     allRows.forEach(r => {
       const val = r.priorityByRSO ? String(r.priorityByRSO).trim() : '';
       if (val && val !== '-' && val.toLowerCase() !== 'null' && val.toLowerCase() !== 'undefined') {
+        counts[val] = (counts[val] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [allRows]);
+
+  const prioritasCeoOptions = useMemo(() => {
+    const counts = {};
+    allRows.forEach(r => {
+      const val = r.prioritasCeo ? String(r.prioritasCeo).trim() : '';
+      if (val && val !== '-' && !val.startsWith('#') && val.toLowerCase() !== 'null' && val.toLowerCase() !== 'undefined') {
         counts[val] = (counts[val] || 0) + 1;
       }
     });
@@ -106,6 +120,25 @@ export function FilterChecklist({
           }}
           icon={Filter}
         />
+
+        {/* Prioritas CEO Dropdown (khusus OLO) */}
+        {showPrioritasCeo && (
+          <FilterDropdown
+            label="PRIORITAS CEO"
+            items={prioritasCeoOptions}
+            selectedSet={multiSelect.prioritasCeo || new Set()}
+            onToggleItem={(name) => onToggleItem('prioritasCeo', name)}
+            onSelectAll={(names) => {
+              names.forEach(n => {
+                if (!multiSelect.prioritasCeo?.has(n)) onToggleItem('prioritasCeo', n);
+              });
+            }}
+            onDeselectAll={() => {
+              [...(multiSelect.prioritasCeo || [])].forEach(n => onToggleItem('prioritasCeo', n));
+            }}
+            icon={Crown}
+          />
+        )}
 
         {/* Komitmen Golive Dropdown */}
         <FilterDropdown

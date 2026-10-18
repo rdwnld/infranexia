@@ -110,6 +110,8 @@ export function parseHemRows(table, isOlo = false) {
   const iRealGolive = colIndex(cols, 'Tanggal Golive Real', isOlo ? 23 : 32);
   const iPriorityRso = colIndex(cols, 'PRIORITY BY RSO', 64);
   const iPrioritas = colIndex(cols, 'PRIORITAS', 68);
+  // PRIORITAS CEO ada di kolom BK (index 62) — khusus sheet OLO
+  const iPrioritasCeo = colIndex(cols, 'PRIORITAS CEO', isOlo ? 62 : -1);
   const iProgram = colIndex(cols, 'PROGRAM', -1);
 
   const parsed = [];
@@ -180,6 +182,7 @@ export function parseHemRows(table, isOlo = false) {
       jenisKabel: String(getCellValue(row, iJenisKabel, '-')).trim() || '-',
       panjangKabel: parseNumber(getCellValue(row, iPanjangKabel, 0)),
       priorityByRSO,
+      prioritasCeo: String(getCellValue(row, iPrioritasCeo, '-')).trim() || '-',
     });
   }
 
