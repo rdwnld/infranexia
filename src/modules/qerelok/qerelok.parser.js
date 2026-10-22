@@ -36,6 +36,7 @@ export function parseQeRelokRows(table) {
   const iTahunPengerjaan = colIndex(cols, 'TAHUN PENGERJAAN', 9);
   const iStatusProgres = colIndex(cols, 'STATUS PROGRES', 16);
   const iDetailStatus = colIndex(cols, 'DETAIL STATUS', 17);
+  const iTgtDariInstansi = colIndex(cols, 'TGT DARI INSTANSI', 18);
   const iTimWaspang = colIndex(cols, 'Tim Waspang', 19);
   const iTimUt = colIndex(cols, 'Tim UT', 20);
   const iSubconTa = colIndex(cols, 'SUBCON TA', 23);
@@ -78,6 +79,7 @@ export function parseQeRelokRows(table) {
       statusProgres,
       isClosed,
       detailStatus: String(getCellValue(row, iDetailStatus, '')).trim(),
+      tgtDariInstansi: String(getCellValue(row, iTgtDariInstansi, '')).trim(),
       timWaspang: String(getCellValue(row, iTimWaspang, '-')).trim() || '-',
       timUt: String(getCellValue(row, iTimUt, '-')).trim() || '-',
       subconTa: String(getCellValue(row, iSubconTa, '-')).trim() || '-',

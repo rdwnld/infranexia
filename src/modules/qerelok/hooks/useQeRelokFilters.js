@@ -14,8 +14,11 @@ const initialState = {
     selectedRegion: null,
   },
   multiSelect: {
+    region: new Set(),
     district: new Set(),
+    tgtDariInstansi: new Set(),
     statusProgres: new Set(),
+    klasifikasiLop: new Set(),
   },
 };
 
@@ -112,10 +115,20 @@ export function useQeRelokFilters(rawRows = []) {
         return false;
       }
 
+      if (state.multiSelect.region.size > 0 && !state.multiSelect.region.has(row.region)) {
+        return false;
+      }
       if (state.multiSelect.district.size > 0 && !state.multiSelect.district.has(row.district)) {
         return false;
       }
+      if (state.multiSelect.tgtDariInstansi.size > 0) {
+        const tgt = row.tgtDariInstansi || 'TBC';
+        if (!state.multiSelect.tgtDariInstansi.has(tgt)) return false;
+      }
       if (state.multiSelect.statusProgres.size > 0 && !state.multiSelect.statusProgres.has(row.statusProgres)) {
+        return false;
+      }
+      if (state.multiSelect.klasifikasiLop.size > 0 && !state.multiSelect.klasifikasiLop.has(row.klasifikasiLop)) {
         return false;
       }
 

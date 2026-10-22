@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { loadSheet, GID_MAP } from '../../../shared/data/gvizClient';
+import { loadSheetCsv, GID_MAP } from '../../../shared/data/gvizClient';
 import { parseQeRelokRows } from '../qerelok.parser';
 
 export function useQeRelokData(regionalFilter = null) {
@@ -12,7 +12,8 @@ export function useQeRelokData(regionalFilter = null) {
     setLoading(true);
     setError(null);
     try {
-      const table = await loadSheet(GID_MAP.QE_RELOK, { headers: 1 });
+      // Pakai CSV export agar filter aktif di sheet tidak menyembunyikan baris lain
+      const table = await loadSheetCsv(GID_MAP.QE_RELOK);
       const parsed = parseQeRelokRows(table);
       setRawRows(parsed);
       setLastUpdated(new Date());

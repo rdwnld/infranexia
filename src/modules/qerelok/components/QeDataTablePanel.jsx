@@ -21,7 +21,8 @@ export function QeDataTablePanel({ filteredRows = [] }) {
       r.idDigasss.toLowerCase().includes(term) ||
       r.statusProgres.toLowerCase().includes(term) ||
       r.subconTa.toLowerCase().includes(term) ||
-      r.klasifikasiLop.toLowerCase().includes(term)
+      r.klasifikasiLop.toLowerCase().includes(term) ||
+      (r.tgtDariInstansi || '').toLowerCase().includes(term)
     );
   }, [filteredRows, searchTerm]);
 
@@ -71,6 +72,7 @@ export function QeDataTablePanel({ filteredRows = [] }) {
               <th className="p-2.5">ID Digasss</th>
               <th className="p-2.5">Klasifikasi</th>
               <th className="p-2.5">Status Progres</th>
+              <th className="p-2.5">TGT dari Instansi</th>
               <th className="p-2.5 text-right">Nilai Plan</th>
               <th className="p-2.5 text-right">Nilai Realisasi</th>
               <th className="p-2.5">Subcon TA</th>
@@ -79,7 +81,7 @@ export function QeDataTablePanel({ filteredRows = [] }) {
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {paginatedRows.length === 0 ? (
               <tr>
-                <td colSpan={11} className="p-6 text-center text-slate-500">
+                <td colSpan={12} className="p-6 text-center text-slate-500">
                   Tidak ada data yang cocok dengan pencarian
                 </td>
               </tr>
@@ -108,6 +110,7 @@ export function QeDataTablePanel({ filteredRows = [] }) {
                       {r.statusProgres}
                     </span>
                   </td>
+                  <td className="p-2.5 text-slate-600 dark:text-slate-400">{r.tgtDariInstansi || 'TBC'}</td>
                   <td className="p-2.5 text-right font-mono">{formatRupiah(r.nilaiPlan)}</td>
                   <td className="p-2.5 text-right font-mono">{formatRupiah(r.nilaiRealisasi)}</td>
                   <td className="p-2.5 text-slate-600 dark:text-slate-400">{r.subconTa}</td>

@@ -7,6 +7,7 @@ import { QeStatusDeploymentPanel } from './components/QeStatusDeploymentPanel';
 import { QeDistrictMatrixPanel } from './components/QeDistrictMatrixPanel';
 import { QeSubStatusPanel } from './components/QeSubStatusPanel';
 import { QeDataTablePanel } from './components/QeDataTablePanel';
+import { QeFilterChecklist } from './components/QeFilterChecklist';
 import { OpenLopMatrixPanel } from '../hem/components/OpenLopMatrixPanel';
 import { LoadingState } from '../../shared/components/LoadingState';
 import { ErrorState } from '../../shared/components/ErrorState';
@@ -39,6 +40,15 @@ export function QeRelokPage({ regional = 'all' }) {
     <div className="space-y-6">
       {/* Last updated + refresh manual */}
       <DataRefreshBar label="QE Relok" lastUpdated={lastUpdated} onRefresh={refresh} />
+
+      {/* Filter Checklist (Region, District, TGT Instansi, Status, Klasifikasi) */}
+      <QeFilterChecklist
+        allRows={rows}
+        multiSelect={state.multiSelect}
+        onToggleItem={toggleMultiSelectItem}
+        onResetFilters={resetFilters}
+        isFiltered={isFiltered}
+      />
 
       {/* Filter Active Badge Indicator */}
       {isFiltered && (
