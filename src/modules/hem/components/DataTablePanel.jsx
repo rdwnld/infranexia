@@ -27,58 +27,220 @@ function getProgressBadgeStyle(raw = '') {
   return 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700';
 }
 
-export function DataTablePanel({ filteredRows = [], moduleTitle = 'HEM' }) {
+function ThWithFilter({
+  label,
+  columnKey,
+  allRowsForOptions,
+  selectedSet,
+  onChangeSelected,
+  sortOrder,
+  onChangeSort,
+  align = 'left'
+}) {
+  const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [sortOrder, setSortOrder] = useState(null); // null | 'asc' | 'desc'
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedProgressSet, setSelectedProgressSet] = useState(null); // null means all selected
-  const [progressSearch, setProgressSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const pageSize = 15;
-  const filterMenuRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (filterMenuRef.current && !filterMenuRef.current.contains(e.target)) {
-        setIsFilterOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const progressOptions = useMemo(() => {
+  const options = useMemo(() => {
     const counts = {};
-    filteredRows.forEach(r => {
-      const p = r.progressLapangan || 'UNKNOWN';
-      counts[p] = (counts[p] || 0) + 1;
+    allRowsForOptions.forEach(r => {
+      let val = r[columnKey];
+      if (val === null || val === undefined || val === '') val = '-';
+      if (columnKey === 'panjangKabel') {
+        val = val ? val.toLocaleString('id-ID') : '-';
+      }
+      const keyStr = String(val);
+      counts[keyStr] = (counts[keyStr] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredRows]);
+  }, [allRowsForOptions, columnKey]);
 
-  const handleToggleProgressItem = (name) => {
-    let current = selectedProgressSet;
-    if (!current) {
-      current = new Set(progressOptions.map(p => p.name));
+  const allSelected = selectedSet === null;
+
+  const handleToggleItem = (name) => {
+    let current = selectedSet;
+    if (current === null) {
+      current = new Set(options.map(o => o.name));
     }
-    const newSet = new Set(current);
-    if (newSet.has(name)) {
-      newSet.delete(name);
+    const next = new Set(current);
+    if (next.has(name)) {
+      next.delete(name);
     } else {
-      newSet.add(name);
+      next.add(name);
     }
-    setSelectedProgressSet(newSet);
+    onChangeSelected(next);
+  };
+
+  const isActive = sortOrder || (selectedSet !== null && selectedSet.size < options.length);
+
+  return (
+    <th className={`p-3 relative ${align === 'right' ? 'text-right' : 'text-left'}`}>
+      <div className={`flex items-center justify-between gap-1.5 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
+        <span>{label}</span>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shrink-0 ${
+            isActive ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+          }`}
+          title={`Filter & Urutkan ${label}`}
+        >
+          <ChevronDown className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {isOpen && (
+        <div
+          ref={menuRef}
+          className={`absolute top-full mt-1 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col text-xs text-slate-800 dark:text-slate-200 ${
+            align === 'right' ? 'right-0' : 'left-0'
+          }`}
+        >
+          {/* Sort Options */}
+          <div className="p-2 border-b border-slate-200 dark:border-slate-800 space-y-1">
+            <button
+              onClick={() => { onChangeSort('asc'); setIsOpen(false); }}
+              className={`w-full px-3 py-1.5 rounded-lg flex items-center justify-between text-left transition-colors ${
+                sortOrder === 'asc' ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <span>Urutkan A ke Z (Ascending)</span>
+              <span>▲</span>
+            </button>
+            <button
+              onClick={() => { onChangeSort('desc'); setIsOpen(false); }}
+              className={`w-full px-3 py-1.5 rounded-lg flex items-center justify-between text-left transition-colors ${
+                sortOrder === 'desc' ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <span>Urutkan Z ke A (Descending)</span>
+              <span>▼</span>
+            </button>
+            {sortOrder && (
+              <button
+                onClick={() => { onChangeSort(null); setIsOpen(false); }}
+                className="w-full px-3 py-1 text-slate-500 hover:underline text-[11px] text-center"
+              >
+                Hapus Pengurutan
+              </button>
+            )}
+          </div>
+
+          {/* Filter by values header */}
+          <div className="px-3 py-2 bg-slate-100 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between font-bold uppercase text-[11px] text-slate-600 dark:text-slate-400">
+            <span>Filter Nilai</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onChangeSelected(null)}
+                className="text-[10px] text-sky-600 dark:text-sky-400 hover:underline font-normal normal-case"
+              >
+                Pilih Semua
+              </button>
+              <span>|</span>
+              <button
+                onClick={() => onChangeSelected(new Set())}
+                className="text-[10px] text-rose-600 dark:text-rose-400 hover:underline font-normal normal-case"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+
+          {/* Search box within filter */}
+          <div className="p-2 border-b border-slate-200 dark:border-slate-800">
+            <div className="relative">
+              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari nilai..."
+                className="w-full pl-7 pr-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-sky-500"
+              />
+            </div>
+          </div>
+
+          {/* Checkbox list */}
+          <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-slate-800/40">
+            {options
+              .filter(opt => !search || opt.name.toLowerCase().includes(search.toLowerCase()))
+              .map(opt => {
+                const isChecked = allSelected || selectedSet.has(opt.name);
+                return (
+                  <div
+                    key={opt.name}
+                    onClick={() => handleToggleItem(opt.name)}
+                    className="px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800/60 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className={`w-3.5 h-3.5 rounded shrink-0 flex items-center justify-center border ${isChecked ? 'bg-sky-600 border-sky-600 text-white' : 'border-slate-400 dark:border-slate-600'}`}>
+                        {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </div>
+                      <span className="truncate" title={opt.name}>{opt.name}</span>
+                    </div>
+                    <span className="font-mono text-slate-400 text-[10px] shrink-0 ml-2">{opt.count}</span>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+    </th>
+  );
+}
+
+export function DataTablePanel({ filteredRows = [], moduleTitle = 'HEM' }) {
+  const [search, setSearch] = useState('');
+  const [columnFilters, setColumnFilters] = useState({}); // { [columnKey]: Set | null }
+  const [sortColumn, setSortColumn] = useState(null); // string | null
+  const [sortOrder, setSortOrder] = useState(null); // 'asc' | 'desc' | null
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
+
+  const handleColumnFilterChange = (columnKey, newSet) => {
+    setColumnFilters(prev => ({
+      ...prev,
+      [columnKey]: newSet
+    }));
     setPage(1);
+  };
+
+  const handleColumnSortChange = (columnKey, order) => {
+    if (!order) {
+      setSortColumn(null);
+      setSortOrder(null);
+    } else {
+      setSortColumn(columnKey);
+      setSortOrder(order);
+    }
   };
 
   const searchedRows = useMemo(() => {
     let result = filteredRows;
 
-    // 1. Filter by selected progress values
-    if (selectedProgressSet !== null) {
-      result = result.filter(r => selectedProgressSet.has(r.progressLapangan || 'UNKNOWN'));
+    // 1. Apply column filters
+    for (const [key, selSet] of Object.entries(columnFilters)) {
+      if (selSet !== null) {
+        result = result.filter(r => {
+          let val = r[key];
+          if (val === null || val === undefined || val === '') val = '-';
+          if (key === 'panjangKabel') {
+            val = val ? val.toLocaleString('id-ID') : '-';
+          }
+          return selSet.has(String(val));
+        });
+      }
     }
 
     // 2. Global search query
@@ -89,19 +251,26 @@ export function DataTablePanel({ filteredRows = [], moduleTitle = 'HEM' }) {
       );
     }
 
-    // 3. Sort by Progress Lapangan
-    if (sortOrder) {
+    // 3. Sort
+    if (sortColumn && sortOrder) {
       result = [...result].sort((a, b) => {
-        const valA = String(a.progressLapangan || '').toLowerCase();
-        const valB = String(b.progressLapangan || '').toLowerCase();
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+        let valA = a[sortColumn];
+        let valB = b[sortColumn];
+        if (valA === null || valA === undefined) valA = '';
+        if (valB === null || valB === undefined) valB = '';
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortOrder === 'asc' ? valA - valB : valB - valA;
+        }
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        if (strA < strB) return sortOrder === 'asc' ? -1 : 1;
+        if (strA > strB) return sortOrder === 'asc' ? 1 : -1;
         return 0;
       });
     }
 
     return result;
-  }, [filteredRows, search, selectedProgressSet, sortOrder]);
+  }, [filteredRows, search, columnFilters, sortColumn, sortOrder]);
 
   const totalPages = Math.ceil(searchedRows.length / pageSize) || 1;
   const paginatedRows = useMemo(() => {
@@ -129,7 +298,7 @@ export function DataTablePanel({ filteredRows = [], moduleTitle = 'HEM' }) {
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Cari LOP, District, Progress..."
+            placeholder="Cari data di tabel..."
             className="pl-9 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700/60 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 w-full sm:w-64 transition-all"
           />
         </div>
@@ -141,132 +310,94 @@ export function DataTablePanel({ filteredRows = [], moduleTitle = 'HEM' }) {
           <thead>
             <tr className="bg-slate-100 dark:bg-slate-950/80 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800 uppercase tracking-wider text-[11px]">
               <th className="p-3 w-12 text-center">No</th>
-              <th className="p-3">Region</th>
-              <th className="p-3">District</th>
-              <th className="p-3">{moduleTitle === 'OLO' ? 'Nama Proyek' : 'Nama LOP'}</th>
-              <th className="p-3 relative">
-                <div className="flex items-center justify-between gap-2">
-                  <span>Progress Lapangan</span>
-                  <button
-                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors ${
-                      sortOrder || (selectedProgressSet !== null && selectedProgressSet.size < progressOptions.length)
-                        ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
-                    }`}
-                    title="Opsi Urutkan & Filter Progress Lapangan (Excel / GSheet Style)"
-                  >
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Excel / GSheet style filter & sort dropdown menu */}
-                {isFilterOpen && (
-                  <div
-                    ref={filterMenuRef}
-                    className="absolute left-3 top-full mt-1 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col text-xs text-slate-800 dark:text-slate-200"
-                  >
-                    {/* Sort Options */}
-                    <div className="p-2 border-b border-slate-200 dark:border-slate-800 space-y-1">
-                      <button
-                        onClick={() => { setSortOrder('asc'); setIsFilterOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg flex items-center justify-between text-left transition-colors ${
-                          sortOrder === 'asc' ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span>Urutkan A ke Z (Ascending)</span>
-                        <span>▲</span>
-                      </button>
-                      <button
-                        onClick={() => { setSortOrder('desc'); setIsFilterOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg flex items-center justify-between text-left transition-colors ${
-                          sortOrder === 'desc' ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span>Urutkan Z ke A (Descending)</span>
-                        <span>▼</span>
-                      </button>
-                      {sortOrder && (
-                        <button
-                          onClick={() => { setSortOrder(null); setIsFilterOpen(false); }}
-                          className="w-full px-3 py-1 text-slate-500 hover:underline text-[11px] text-center"
-                        >
-                          Hapus Pengurutan
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Filter by values header */}
-                    <div className="px-3 py-2 bg-slate-100 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between font-bold uppercase text-[11px] text-slate-600 dark:text-slate-400">
-                      <span>Filter Nilai</span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => { setSelectedProgressSet(null); setPage(1); }}
-                          className="text-[10px] text-sky-600 dark:text-sky-400 hover:underline font-normal normal-case"
-                        >
-                          Pilih Semua
-                        </button>
-                        <span>|</span>
-                        <button
-                          onClick={() => { setSelectedProgressSet(new Set()); setPage(1); }}
-                          className="text-[10px] text-rose-600 dark:text-rose-400 hover:underline font-normal normal-case"
-                        >
-                          Hapus
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Search box within filter */}
-                    <div className="p-2 border-b border-slate-200 dark:border-slate-800">
-                      <div className="relative">
-                        <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          value={progressSearch}
-                          onChange={(e) => setProgressSearch(e.target.value)}
-                          placeholder="Cari nilai progress..."
-                          className="w-full pl-7 pr-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-sky-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Checkbox list */}
-                    <div className="max-h-52 overflow-y-auto custom-scrollbar divide-y divide-slate-100 dark:divide-slate-800/40">
-                      {progressOptions
-                        .filter(opt => !progressSearch || opt.name.toLowerCase().includes(progressSearch.toLowerCase()))
-                        .map(opt => {
-                          const isChecked = selectedProgressSet === null || selectedProgressSet.has(opt.name);
-                          return (
-                            <div
-                              key={opt.name}
-                              onClick={() => handleToggleProgressItem(opt.name)}
-                              className="px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800/60 cursor-pointer flex items-center justify-between text-xs transition-colors"
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div className={`w-3.5 h-3.5 rounded shrink-0 flex items-center justify-center border ${isChecked ? 'bg-sky-600 border-sky-600 text-white' : 'border-slate-400 dark:border-slate-600'}`}>
-                                  {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                                </div>
-                                <span className="truncate">{opt.name}</span>
-                              </div>
-                              <span className="font-mono text-slate-400 text-[10px] shrink-0 ml-2">{opt.count}</span>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                )}
-              </th>
-              <th className="p-3">Detail Progres</th>
-              <th className="p-3">Komitmen Golive</th>
-              <th className="p-3">Tanggal Submit</th>
-              <th className="p-3">Jenis Kabel</th>
-              <th className="p-3 text-right">Panjang Kabel (m)</th>
+              <ThWithFilter
+                label="Region"
+                columnKey="region"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.region !== undefined ? columnFilters.region : null}
+                onChangeSelected={(set) => handleColumnFilterChange('region', set)}
+                sortOrder={sortColumn === 'region' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('region', order)}
+              />
+              <ThWithFilter
+                label="District"
+                columnKey="district"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.district !== undefined ? columnFilters.district : null}
+                onChangeSelected={(set) => handleColumnFilterChange('district', set)}
+                sortOrder={sortColumn === 'district' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('district', order)}
+              />
+              <ThWithFilter
+                label={moduleTitle === 'OLO' ? 'Nama Proyek' : 'Nama LOP'}
+                columnKey="namaLop"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.namaLop !== undefined ? columnFilters.namaLop : null}
+                onChangeSelected={(set) => handleColumnFilterChange('namaLop', set)}
+                sortOrder={sortColumn === 'namaLop' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('namaLop', order)}
+              />
+              <ThWithFilter
+                label="Progress Lapangan"
+                columnKey="progressLapangan"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.progressLapangan !== undefined ? columnFilters.progressLapangan : null}
+                onChangeSelected={(set) => handleColumnFilterChange('progressLapangan', set)}
+                sortOrder={sortColumn === 'progressLapangan' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('progressLapangan', order)}
+              />
+              <ThWithFilter
+                label="Detail Progres"
+                columnKey="detailProgres"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.detailProgres !== undefined ? columnFilters.detailProgres : null}
+                onChangeSelected={(set) => handleColumnFilterChange('detailProgres', set)}
+                sortOrder={sortColumn === 'detailProgres' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('detailProgres', order)}
+              />
+              <ThWithFilter
+                label="Komitmen Golive"
+                columnKey="targetGolive"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.targetGolive !== undefined ? columnFilters.targetGolive : null}
+                onChangeSelected={(set) => handleColumnFilterChange('targetGolive', set)}
+                sortOrder={sortColumn === 'targetGolive' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('targetGolive', order)}
+              />
+              <ThWithFilter
+                label="Tanggal Submit"
+                columnKey="tglOrder"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.tglOrder !== undefined ? columnFilters.tglOrder : null}
+                onChangeSelected={(set) => handleColumnFilterChange('tglOrder', set)}
+                sortOrder={sortColumn === 'tglOrder' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('tglOrder', order)}
+              />
+              <ThWithFilter
+                label="Jenis Kabel"
+                columnKey="jenisKabel"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.jenisKabel !== undefined ? columnFilters.jenisKabel : null}
+                onChangeSelected={(set) => handleColumnFilterChange('jenisKabel', set)}
+                sortOrder={sortColumn === 'jenisKabel' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('jenisKabel', order)}
+              />
+              <ThWithFilter
+                label="Panjang Kabel (m)"
+                columnKey="panjangKabel"
+                allRowsForOptions={filteredRows}
+                selectedSet={columnFilters.panjangKabel !== undefined ? columnFilters.panjangKabel : null}
+                onChangeSelected={(set) => handleColumnFilterChange('panjangKabel', set)}
+                sortOrder={sortColumn === 'panjangKabel' ? sortOrder : null}
+                onChangeSort={(order) => handleColumnSortChange('panjangKabel', order)}
+                align="right"
+              />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {paginatedRows.length === 0 ? (
               <tr>
-                <td colSpan={10} className="p-8 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={11} className="p-8 text-center text-slate-500 dark:text-slate-400">
                   <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
                   Tidak ada data yang ditemukan.
                 </td>
