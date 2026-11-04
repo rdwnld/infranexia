@@ -145,7 +145,7 @@ export function useHemFilters(rawRows = []) {
         const card = state.singleSelect.profilingCard;
         const isHold = row.subStagePersiapan === SUB_STAGES_PERSIAPAN.HOLD || (row.progressLapangan && row.progressLapangan.toUpperCase().includes('HOLD'));
         const isDrop = row.stage === STAGES.APPROVED_DROP || row.stage === STAGES.PROPOSED_DROP;
-        const isGolive = row.stage === STAGES.GOLIVE_UT;
+        const isGolive = row.stage === STAGES.GOLIVE_UT || (row.progressLapangan && row.progressLapangan.toUpperCase().includes('REKON'));
         const isBisaPt1 = row.stage === STAGES.BISA_PT1;
         const isOgp = !isGolive && !isDrop && !isHold && !isBisaPt1;
 

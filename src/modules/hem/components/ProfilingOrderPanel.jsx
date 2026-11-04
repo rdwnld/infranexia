@@ -13,11 +13,14 @@ export function ProfilingOrderPanel({ filteredRows = [], activeCard = null, onSe
 
     filteredRows.forEach((r) => {
       if (!r) return;
-      if (r.subStagePersiapan === SUB_STAGES_PERSIAPAN.HOLD || (r.progressLapangan && r.progressLapangan.toUpperCase().includes('HOLD'))) {
+      const prog = (r.progressLapangan || '').toUpperCase();
+      const isRekon = prog.includes('REKON');
+
+      if (r.subStagePersiapan === SUB_STAGES_PERSIAPAN.HOLD || prog.includes('HOLD')) {
         hold++;
       } else if (r.stage === STAGES.APPROVED_DROP || r.stage === STAGES.PROPOSED_DROP) {
         drop++;
-      } else if (r.stage === STAGES.GOLIVE_UT) {
+      } else if (isRekon || r.stage === STAGES.GOLIVE_UT) {
         golive++;
       } else if (r.stage === STAGES.BISA_PT1) {
         bisaPt1++;
